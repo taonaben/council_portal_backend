@@ -1,0 +1,4102 @@
+openapi: 3.0.3
+info:
+  title: Council Portal API
+  version: 1.0.0
+  description: API for Council Portal
+paths:
+  /announcements/{city_id}/{id}/:
+    get:
+      operationId: announcements_retrieve
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+          description: ''
+    put:
+      operationId: announcements_update
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+          description: ''
+    patch:
+      operationId: announcements_partial_update
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAnnouncement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAnnouncement'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAnnouncement'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+          description: ''
+    delete:
+      operationId: announcements_destroy
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /announcements/all/{city_id}/:
+    get:
+      operationId: announcements_all_list
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Announcement'
+          description: ''
+    post:
+      operationId: announcements_all_create
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - announcements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+          description: ''
+  /business/all/{city_id}/:
+    get:
+      operationId: business_all_list
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Business'
+          description: ''
+    post:
+      operationId: business_all_create
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Business'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Business'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+  /business/detail/{id}/:
+    get:
+      operationId: business_detail_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+    put:
+      operationId: business_detail_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Business'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Business'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+    patch:
+      operationId: business_detail_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+    delete:
+      operationId: business_detail_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /business/license/{business_id}/:
+    get:
+      operationId: business_license_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessLicense'
+          description: ''
+    post:
+      operationId: business_license_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLicense'
+          description: ''
+  /business/license/detail/{id}/:
+    get:
+      operationId: business_license_detail_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLicense'
+          description: ''
+    put:
+      operationId: business_license_detail_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BusinessLicense'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLicense'
+          description: ''
+    patch:
+      operationId: business_license_detail_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBusinessLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBusinessLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBusinessLicense'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLicense'
+          description: ''
+    delete:
+      operationId: business_license_detail_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - business
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /cities/{city_id}/sections/:
+    get:
+      operationId: cities_sections_list
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CitySection'
+          description: ''
+    post:
+      operationId: cities_sections_create
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitySection'
+          description: ''
+  /cities/{id}/:
+    get:
+      operationId: cities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+          description: ''
+    put:
+      operationId: cities_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/City'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/City'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/City'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+          description: ''
+    patch:
+      operationId: cities_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCity'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCity'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCity'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+          description: ''
+    delete:
+      operationId: cities_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /cities/all/:
+    get:
+      operationId: cities_all_list
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+          description: ''
+    post:
+      operationId: cities_all_create
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/City'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/City'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/City'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+          description: ''
+  /cities/sections/{id}/:
+    get:
+      operationId: cities_sections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitySection'
+          description: ''
+    put:
+      operationId: cities_sections_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CitySection'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitySection'
+          description: ''
+    patch:
+      operationId: cities_sections_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCitySection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCitySection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCitySection'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitySection'
+          description: ''
+    delete:
+      operationId: cities_sections_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cities
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /debts/all/{user_id}:
+    get:
+      operationId: debts_all_list
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Debt'
+          description: ''
+    post:
+      operationId: debts_all_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Debt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Debt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Debt'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Debt'
+          description: ''
+  /debts/detail/{id}/:
+    get:
+      operationId: debts_detail_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Debt'
+          description: ''
+    put:
+      operationId: debts_detail_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Debt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Debt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Debt'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Debt'
+          description: ''
+    patch:
+      operationId: debts_detail_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDebt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDebt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDebt'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Debt'
+          description: ''
+    delete:
+      operationId: debts_detail_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - debts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /issues/{issue_id}/comments/:
+    get:
+      operationId: issues_comments_list
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/issueComment'
+          description: ''
+    post:
+      operationId: issues_comments_create
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issueComment'
+          description: ''
+  /issues/{issue_id}/comments/{comment_id}/:
+    get:
+      operationId: issues_comments_retrieve
+      parameters:
+      - in: path
+        name: comment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issueComment'
+          description: ''
+    put:
+      operationId: issues_comments_update
+      parameters:
+      - in: path
+        name: comment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/issueComment'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issueComment'
+          description: ''
+    patch:
+      operationId: issues_comments_partial_update
+      parameters:
+      - in: path
+        name: comment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedissueComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedissueComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedissueComment'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issueComment'
+          description: ''
+    delete:
+      operationId: issues_comments_destroy
+      parameters:
+      - in: path
+        name: comment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /issues/{user_id}/all/:
+    get:
+      operationId: issues_all_list
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IssueReport'
+          description: ''
+    post:
+      operationId: issues_all_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueReport'
+          description: ''
+  /issues/{user_id}/issue/{issue_id}/:
+    get:
+      operationId: issues_issue_retrieve
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueReport'
+          description: ''
+    put:
+      operationId: issues_issue_update
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IssueReport'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueReport'
+          description: ''
+    patch:
+      operationId: issues_issue_partial_update
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedIssueReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedIssueReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedIssueReport'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueReport'
+          description: ''
+    delete:
+      operationId: issues_issue_destroy
+      parameters:
+      - in: path
+        name: issue_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - issues
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /parking/{user_id}/{ticket_id}/:
+    get:
+      operationId: parking_retrieve
+      parameters:
+      - in: path
+        name: ticket_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingTicket'
+          description: ''
+    put:
+      operationId: parking_update
+      parameters:
+      - in: path
+        name: ticket_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingTicket'
+          description: ''
+    patch:
+      operationId: parking_partial_update
+      parameters:
+      - in: path
+        name: ticket_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingTicket'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingTicket'
+          description: ''
+    delete:
+      operationId: parking_destroy
+      parameters:
+      - in: path
+        name: ticket_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /parking/{user_id}/all/:
+    get:
+      operationId: parking_all_list
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingTicket'
+          description: ''
+    post:
+      operationId: parking_all_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - parking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingTicket'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingTicket'
+          description: ''
+  /pet_licensing/{user_id}/{license_id}/:
+    get:
+      operationId: pet_licensing_retrieve
+      parameters:
+      - in: path
+        name: license_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetLicense'
+          description: ''
+    put:
+      operationId: pet_licensing_update
+      parameters:
+      - in: path
+        name: license_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetLicense'
+          description: ''
+    patch:
+      operationId: pet_licensing_partial_update
+      parameters:
+      - in: path
+        name: license_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPetLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPetLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPetLicense'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetLicense'
+          description: ''
+    delete:
+      operationId: pet_licensing_destroy
+      parameters:
+      - in: path
+        name: license_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /pet_licensing/{user_id}/all/:
+    get:
+      operationId: pet_licensing_all_list
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PetLicense'
+          description: ''
+    post:
+      operationId: pet_licensing_all_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pet_licensing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PetLicense'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetLicense'
+          description: ''
+  /properties/{id}/:
+    get:
+      operationId: properties_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - properties
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    put:
+      operationId: properties_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - properties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Property'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Property'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Property'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    patch:
+      operationId: properties_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - properties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    delete:
+      operationId: properties_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - properties
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /properties/all/:
+    get:
+      operationId: properties_all_list
+      tags:
+      - properties
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Property'
+          description: ''
+    post:
+      operationId: properties_all_create
+      tags:
+      - properties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Property'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Property'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Property'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+  /taxes/{tax_id}/:
+    get:
+      operationId: taxes_retrieve
+      parameters:
+      - in: path
+        name: tax_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    put:
+      operationId: taxes_update
+      parameters:
+      - in: path
+        name: tax_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tax'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tax'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tax'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    patch:
+      operationId: taxes_partial_update
+      parameters:
+      - in: path
+        name: tax_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTax'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTax'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTax'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    delete:
+      operationId: taxes_destroy
+      parameters:
+      - in: path
+        name: tax_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /taxes/all/:
+    get:
+      operationId: taxes_all_list
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tax'
+          description: ''
+    post:
+      operationId: taxes_all_create
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tax'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tax'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tax'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+  /taxes/tax_bills/:
+    get:
+      operationId: taxes_tax_bills_list
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaxBill'
+          description: ''
+    post:
+      operationId: taxes_tax_bills_create
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxBill'
+          description: ''
+  /taxes/tax_bills/{tax_bill_id}/:
+    get:
+      operationId: taxes_tax_bills_retrieve
+      parameters:
+      - in: path
+        name: tax_bill_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxBill'
+          description: ''
+    put:
+      operationId: taxes_tax_bills_update
+      parameters:
+      - in: path
+        name: tax_bill_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxBill'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxBill'
+          description: ''
+    patch:
+      operationId: taxes_tax_bills_partial_update
+      parameters:
+      - in: path
+        name: tax_bill_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxBill'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxBill'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxBill'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxBill'
+          description: ''
+    delete:
+      operationId: taxes_tax_bills_destroy
+      parameters:
+      - in: path
+        name: tax_bill_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /taxes/tax_exemptions/:
+    get:
+      operationId: taxes_tax_exemptions_list
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaxExemption'
+          description: ''
+    post:
+      operationId: taxes_tax_exemptions_create
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxExemption'
+          description: ''
+  /taxes/tax_exemptions/{tax_exemption_id}/:
+    get:
+      operationId: taxes_tax_exemptions_retrieve
+      parameters:
+      - in: path
+        name: tax_exemption_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxExemption'
+          description: ''
+    put:
+      operationId: taxes_tax_exemptions_update
+      parameters:
+      - in: path
+        name: tax_exemption_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxExemption'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxExemption'
+          description: ''
+    patch:
+      operationId: taxes_tax_exemptions_partial_update
+      parameters:
+      - in: path
+        name: tax_exemption_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxExemption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxExemption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxExemption'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxExemption'
+          description: ''
+    delete:
+      operationId: taxes_tax_exemptions_destroy
+      parameters:
+      - in: path
+        name: tax_exemption_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /taxes/tax_payers/{city_id}/:
+    get:
+      operationId: taxes_tax_payers_list
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaxPayer'
+          description: ''
+    post:
+      operationId: taxes_tax_payers_create
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPayer'
+          description: ''
+  /taxes/tax_payers/{city_id}/{tax_payer_id}/:
+    get:
+      operationId: taxes_tax_payers_retrieve
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: tax_payer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPayer'
+          description: ''
+    put:
+      operationId: taxes_tax_payers_update
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: tax_payer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxPayer'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPayer'
+          description: ''
+    patch:
+      operationId: taxes_tax_payers_partial_update
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: tax_payer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - taxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxPayer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxPayer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxPayer'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPayer'
+          description: ''
+    delete:
+      operationId: taxes_tax_payers_destroy
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: tax_payer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - taxes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /users/{user_id}/:
+    get:
+      operationId: users_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: users_destroy
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /users/all/:
+    get:
+      operationId: users_all_list
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: users_all_create
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /vehicles/{vehicle_id}/:
+    get:
+      operationId: vehicles_retrieve
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vehicles
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    put:
+      operationId: vehicles_update
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vehicles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    patch:
+      operationId: vehicles_partial_update
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vehicles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    delete:
+      operationId: vehicles_destroy
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vehicles
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /vehicles/all/:
+    get:
+      operationId: vehicles_all_list
+      tags:
+      - vehicles
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+          description: ''
+    post:
+      operationId: vehicles_all_create
+      tags:
+      - vehicles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+  /vehicles/my_vehicles/:
+    get:
+      operationId: vehicles_my_vehicles_list
+      tags:
+      - vehicles
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+          description: ''
+    post:
+      operationId: vehicles_my_vehicles_create
+      tags:
+      - vehicles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+components:
+  schemas:
+    Announcement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        city:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 300
+        message:
+          type: string
+          nullable: true
+        date_posted:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - city
+      - date_posted
+      - id
+      - title
+    Business:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          maxLength: 50
+        reg_num:
+          type: string
+          maxLength: 100
+        tax:
+          type: string
+          format: uuid
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/BusinessStatusEnum'
+          - $ref: '#/components/schemas/NullEnum'
+      required:
+      - city
+      - id
+      - name
+      - reg_num
+      - type
+      - user
+    BusinessLicense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        business:
+          type: string
+          format: uuid
+        type:
+          type: string
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        expiration_date:
+          type: string
+          format: date
+          nullable: true
+        license_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/StatusC73Enum'
+          - $ref: '#/components/schemas/NullEnum'
+      required:
+      - business
+      - id
+      - type
+    BusinessStatusEnum:
+      enum:
+      - closed
+      - active
+      - suspended
+      type: string
+      description: |-
+        * `closed` - closed
+        * `active` - active
+        * `suspended` - suspended
+    City:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    CitySection:
+      type: object
+      properties:
+        city:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 50
+        section:
+          $ref: '#/components/schemas/SectionEnum'
+      required:
+      - city
+      - name
+      - section
+    Debt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        bill:
+          type: string
+          format: uuid
+          nullable: true
+        amount_owed:
+          type: number
+          format: double
+        amount_paid:
+          type: number
+          format: double
+        due_date:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/DebtStatusEnum'
+        last_payment_date:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - amount_owed
+      - amount_paid
+      - due_date
+      - id
+      - user
+    DebtStatusEnum:
+      enum:
+      - pending
+      - overdue
+      - paid
+      type: string
+      description: |-
+        * `pending` - pending
+        * `overdue` - overdue
+        * `paid` - paid
+    HousingStatusEnum:
+      enum:
+      - owned
+      - rented
+      type: string
+      description: |-
+        * `owned` - owned
+        * `rented` - rented
+    IssueReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/IssueReportStatusEnum'
+        issueComments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        comment_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - city
+      - comment_count
+      - created_at
+      - id
+      - issueComments
+      - status
+      - user
+    IssueReportStatusEnum:
+      enum:
+      - pending
+      - resolved
+      - active
+      type: string
+      description: |-
+        * `pending` - pending
+        * `resolved` - resolved
+        * `active` - active
+    NullEnum:
+      enum:
+      - null
+    ParkingTicket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        car:
+          type: string
+          format: uuid
+        issued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expiry_at:
+          type: string
+          format: date-time
+          nullable: true
+        amount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/ParkingTicketStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - car
+      - created_at
+      - id
+      - issued_at
+      - user
+    ParkingTicketStatusEnum:
+      enum:
+      - active
+      - expired
+      - used
+      type: string
+      description: |-
+        * `active` - active
+        * `expired` - expired
+        * `used` - used
+    PatchedAnnouncement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        city:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 300
+        message:
+          type: string
+          nullable: true
+        date_posted:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBusiness:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          maxLength: 50
+        reg_num:
+          type: string
+          maxLength: 100
+        tax:
+          type: string
+          format: uuid
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/BusinessStatusEnum'
+          - $ref: '#/components/schemas/NullEnum'
+    PatchedBusinessLicense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        business:
+          type: string
+          format: uuid
+        type:
+          type: string
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        expiration_date:
+          type: string
+          format: date
+          nullable: true
+        license_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/StatusC73Enum'
+          - $ref: '#/components/schemas/NullEnum'
+    PatchedCity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+    PatchedCitySection:
+      type: object
+      properties:
+        city:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 50
+        section:
+          $ref: '#/components/schemas/SectionEnum'
+    PatchedDebt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        bill:
+          type: string
+          format: uuid
+          nullable: true
+        amount_owed:
+          type: number
+          format: double
+        amount_paid:
+          type: number
+          format: double
+        due_date:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/DebtStatusEnum'
+        last_payment_date:
+          type: string
+          format: date-time
+          nullable: true
+    PatchedIssueReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/IssueReportStatusEnum'
+        issueComments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        comment_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedParkingTicket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        car:
+          type: string
+          format: uuid
+        issued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expiry_at:
+          type: string
+          format: date-time
+          nullable: true
+        amount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/ParkingTicketStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPetLicense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: string
+          format: uuid
+        pet_name:
+          type: string
+          maxLength: 50
+        species:
+          type: string
+          nullable: true
+          maxLength: 50
+        breed:
+          type: string
+          nullable: true
+          maxLength: 50
+        age:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        registration_date:
+          type: string
+          format: date
+        expiration_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusC73Enum'
+        fee:
+          type: number
+          format: double
+        vaccination_status:
+          $ref: '#/components/schemas/VaccinationStatusEnum'
+    PatchedProperty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        community:
+          type: string
+          format: uuid
+        area_sq_m:
+          type: number
+          format: double
+        address:
+          type: string
+        value:
+          type: number
+          format: double
+        property_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PropertyTypeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        housing_status:
+          $ref: '#/components/schemas/HousingStatusEnum'
+        tax:
+          type: string
+          format: uuid
+    PatchedTax:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        city:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        renewal_period:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RenewalPeriodEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+          nullable: true
+    PatchedTaxBill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tax_payer:
+          type: string
+          format: uuid
+        tax:
+          type: string
+          format: uuid
+        amount_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/TaxBillStatusEnum'
+          - $ref: '#/components/schemas/NullEnum'
+    PatchedTaxExemption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tax:
+          type: string
+          format: uuid
+        taxpayer:
+          type: string
+          format: uuid
+        exemption_reason:
+          type: string
+          nullable: true
+        discount_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+    PatchedTaxPayer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+          nullable: true
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        business:
+          type: string
+          format: uuid
+          nullable: true
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        total_tax_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        last_payment_date:
+          type: string
+          format: date
+          nullable: true
+    PatchedUser:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        city:
+          type: string
+          format: uuid
+          nullable: true
+    PatchedVehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: integer
+        plate_number:
+          type: string
+          maxLength: 20
+        brand:
+          type: string
+          nullable: true
+          maxLength: 50
+        model:
+          type: string
+          nullable: true
+          maxLength: 50
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
+        tax:
+          type: string
+          format: uuid
+          nullable: true
+        parking_tickets:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
+        ticket_count:
+          type: string
+          readOnly: true
+        registered_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedissueComment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PetLicense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: string
+          format: uuid
+        pet_name:
+          type: string
+          maxLength: 50
+        species:
+          type: string
+          nullable: true
+          maxLength: 50
+        breed:
+          type: string
+          nullable: true
+          maxLength: 50
+        age:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        registration_date:
+          type: string
+          format: date
+        expiration_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusC73Enum'
+        fee:
+          type: number
+          format: double
+        vaccination_status:
+          $ref: '#/components/schemas/VaccinationStatusEnum'
+      required:
+      - age
+      - fee
+      - id
+      - pet_name
+      - property
+      - registration_date
+      - status
+      - user
+      - vaccination_status
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: integer
+        city:
+          type: string
+          format: uuid
+        community:
+          type: string
+          format: uuid
+        area_sq_m:
+          type: number
+          format: double
+        address:
+          type: string
+        value:
+          type: number
+          format: double
+        property_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PropertyTypeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        housing_status:
+          $ref: '#/components/schemas/HousingStatusEnum'
+        tax:
+          type: string
+          format: uuid
+      required:
+      - address
+      - area_sq_m
+      - city
+      - community
+      - housing_status
+      - id
+      - owner
+      - tax
+      - value
+    PropertyTypeEnum:
+      enum:
+      - residential
+      - commercial
+      - industrial
+      - agricultural
+      - institutional
+      - vacant
+      - other
+      type: string
+      description: |-
+        * `residential` - residential
+        * `commercial` - commercial
+        * `industrial` - industrial
+        * `agricultural` - agricultural
+        * `institutional` - institutional
+        * `vacant` - vacant
+        * `other` - other
+    RenewalPeriodEnum:
+      enum:
+      - daily
+      - weekly
+      - monthly
+      - yearly
+      - duty
+      type: string
+      description: |-
+        * `daily` - daily
+        * `weekly` - weekly
+        * `monthly` - monthly
+        * `yearly` - yearly
+        * `duty` - duty(once)
+    SectionEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - cbd
+      type: string
+      description: |-
+        * `low` - low
+        * `medium` - medium
+        * `high` - high
+        * `cbd` - cbd
+    StatusC73Enum:
+      enum:
+      - active
+      - expired
+      - pending_renewal
+      type: string
+      description: |-
+        * `active` - active
+        * `expired` - expired
+        * `pending_renewal` - pending_renewal
+    Tax:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        city:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        renewal_period:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RenewalPeriodEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        description:
+          type: string
+          nullable: true
+      required:
+      - city
+      - id
+      - rate
+      - type
+    TaxBill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tax_payer:
+          type: string
+          format: uuid
+        tax:
+          type: string
+          format: uuid
+        amount_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/TaxBillStatusEnum'
+          - $ref: '#/components/schemas/NullEnum'
+      required:
+      - id
+      - status
+      - tax
+      - tax_payer
+    TaxBillStatusEnum:
+      enum:
+      - pending
+      - paid
+      - overdue
+      type: string
+      description: |-
+        * `pending` - pending
+        * `paid` - paid
+        * `overdue` - overdue
+    TaxExemption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tax:
+          type: string
+          format: uuid
+        taxpayer:
+          type: string
+          format: uuid
+        exemption_reason:
+          type: string
+          nullable: true
+        discount_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+      required:
+      - id
+      - tax
+      - taxpayer
+    TaxPayer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+        city:
+          type: string
+          format: uuid
+          nullable: true
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        business:
+          type: string
+          format: uuid
+          nullable: true
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        total_tax_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        last_payment_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - id
+      - user
+    TypeEnum:
+      enum:
+      - property
+      - business
+      - vehicle
+      - housing
+      type: string
+      description: |-
+        * `property` - property
+        * `business` - business
+        * `vehicle` - vehicle
+        * `housing` - housing
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        city:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - password
+      - username
+    VaccinationStatusEnum:
+      enum:
+      - pending
+      - vaccinated
+      type: string
+      description: |-
+        * `pending` - pending
+        * `vaccinated` - vaccinated
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner:
+          type: integer
+        plate_number:
+          type: string
+          maxLength: 20
+        brand:
+          type: string
+          nullable: true
+          maxLength: 50
+        model:
+          type: string
+          nullable: true
+          maxLength: 50
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
+        tax:
+          type: string
+          format: uuid
+          nullable: true
+        parking_tickets:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
+        ticket_count:
+          type: string
+          readOnly: true
+        registered_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - owner
+      - parking_tickets
+      - plate_number
+      - registered_at
+      - ticket_count
+    issueComment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - created_at
+      - id
+      - user
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

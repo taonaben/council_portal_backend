@@ -1,0 +1,17 @@
+
+
+###
+
+GET http://127.0.0.1:8000/announcements/all/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM4OTM3MDIxLCJpYXQiOjE3Mzg5MzY3MjEsImp0aSI6ImQ0OTAwY2JlMmQ3MjQ5MGRhOTM1YjA0ODJhMzk2Y2M3IiwidXNlcl9pZCI6Nn0.YmPqaGY0D1PVDYKApa1fIawq3IGsz6Kuq96XCmWLudo
+
+###
+
+POST http://127.0.0.1:8000/announcements/all/ HTTP/1.1
+Content-Type:  application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM4OTM3MDIxLCJpYXQiOjE3Mzg5MzY3MjEsImp0aSI6ImQ0OTAwY2JlMmQ3MjQ5MGRhOTM1YjA0ODJhMzk2Y2M3IiwidXNlcl9pZCI6Nn0.YmPqaGY0D1PVDYKApa1fIawq3IGsz6Kuq96XCmWLudo
+
+{
+    "title": "operation muramba tsvina",
+    "message": "trash pickup"
+}
