@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from portal.models import WaterBill, WaterMeter, WaterUsage
+from django.db.models import Sum
 
 
 class WaterMeterSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterMeter
-        fields = "__all__"
+        fields = (
+            "id",
+            "meter_num",
+            "property",
+            "current_reading",
+        )
+
+        read_only_fields = ("id", "current_reading", "meter_num")
 
     def update(self, instance, validated_data):
         new_reading = validated_data.get("current_reading", instance.current_reading)
@@ -33,13 +41,30 @@ class WaterBillSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterBill
         fields = (
-            'id',
-            'property',
-            'water_used',
-            'meter_number',
-            'amount'
+            "id",
+            "property",
+            "water_used",
+            "meter_number",
+            "amount_owed",
+            "amount_paid",
+            "status",
+            "created_at",
         )
 
-        extra_kwargs = {
-            "id": {"read_only": True},
-        }
+        read_only_fields = (
+            "id",
+            "property",
+            "water_used",
+            "amount_owed",
+            "status",
+            "created_at",
+        )
+
+class TotalWaterDebtSerializer(serializers.Serializer):
+    total_amount_owed = serializers.SerializerMethodField(method_name="get_total_amount_owed")
+
+    def get_total_amount_owed(self, obj) -> float:
+        return WaterBill.objects.aggregate(total_owed=Sum('amount_owed'))['total_owed'] or 0
+    
+    class Meta:
+        fields = ('total_amount_owed',)

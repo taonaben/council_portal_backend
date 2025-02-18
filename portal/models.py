@@ -7,6 +7,12 @@ import uuid
 import string
 from django.utils import timezone
 
+review_enums = {
+    "pending": "pending",
+    "approved": "approved",
+    "denied": "denied",
+}
+
 
 class City(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -17,6 +23,24 @@ class City(models.Model):
         return self.name
 
 
+class CitySection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    section = models.CharField(
+        max_length=50,
+        choices=[
+            ("low", "low"),
+            ("medium", "medium"),
+            ("high", "high"),
+            ("cbd", "cbd"),
+        ],
+    )
+
+    def __str__(self):
+        return self.name + " - " + self.city.name
+
+
 class User(AbstractUser):
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
 
@@ -25,7 +49,7 @@ class Property(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
-    community = models.ForeignKey("CitySection", on_delete=models.CASCADE)
+    community = models.ForeignKey(CitySection, on_delete=models.CASCADE)
     area_sq_m = models.FloatField()
     address = models.TextField()
     value = models.FloatField()
@@ -49,7 +73,7 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.address + " - " + self.city.name
+        return self.address + " - " + self.owner.username + "(" + self.city.name + ")"
 
 
 class WaterBill(models.Model):
@@ -57,7 +81,14 @@ class WaterBill(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     water_used = models.FloatField()
     meter_number = models.IntegerField()
-    amount = models.FloatField()
+    amount_owed = models.FloatField()
+    amount_paid = models.FloatField(null=True)
+    status = models.CharField(
+        max_length=50,
+        choices=[("pending", "pending"), ("paid", "paid")],
+        default="pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.property.address + " - " + str(self.amount)
@@ -65,12 +96,24 @@ class WaterBill(models.Model):
 
 class WaterMeter(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    meter_num = models.IntegerField(unique=True)
+    meter_num = models.CharField(unique=True, max_length=20)
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    current_reading = models.IntegerField()
+    current_reading = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self.meter_num) + " - " + self.property.address
+
+    def generate_meter_num(self):
+        values = string.digits
+        num = "".join(random.choice(values) for _ in range(10))
+
+        first_val = self.property.community.name[0]
+        return first_val.upper() + num + "25"
+
+    def save(self, *args, **kwargs):
+        if not self.meter_num:
+            self.meter_num = self.generate_meter_num()
+        super().save(*args, **kwargs)
 
     def update_reading(self, new_reading):
         if new_reading != self.current_reading:
@@ -88,27 +131,8 @@ class WaterUsage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     meter = models.ForeignKey(WaterMeter, on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    consumption = models.IntegerField()
+    consumption = models.FloatField()
     date_recorded = models.DateTimeField()
-
-
-class Debt(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, null=True)
-    bill = models.ForeignKey(WaterBill, on_delete=models.CASCADE, null=True)
-    amount_owed = models.FloatField()
-    amount_paid = models.FloatField()
-    due_date = models.DateTimeField()
-    status = models.CharField(
-        max_length=50,
-        choices=[("pending", "pending"), ("overdue", "overdue"), ("paid", "paid")],
-        default="pending",
-    )
-    last_payment_date = models.DateTimeField(null=True)
-
-    def __str__(self):
-        return self.user.username + " - " + self.property.address
 
 
 class Business(models.Model):
@@ -255,11 +279,7 @@ class BusinessLicenseApproval(models.Model):
     admin = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     review_status = models.CharField(
         max_length=50,
-        choices=[
-            ("pending", "pending"),
-            ("approved", "approved"),
-            ("denied", "denied"),
-        ],
+        choices=review_enums.items(),
         default="pending",
         null=False,
     )
@@ -299,11 +319,7 @@ class VehicleApproval(models.Model):
     admin = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     review_status = models.CharField(
         max_length=50,
-        choices=[
-            ("pending", "pending"),
-            ("approved", "approved"),
-            ("denied", "denied"),
-        ],
+        choices=review_enums.items(),
         default="pending",
         null=False,
     )
@@ -418,24 +434,6 @@ class ParkingTicket(models.Model):
         return (
             f"{self.car.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
         )
-
-
-class CitySection(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    section = models.CharField(
-        max_length=50,
-        choices=[
-            ("low", "low"),
-            ("medium", "medium"),
-            ("high", "high"),
-            ("cbd", "cbd"),
-        ],
-    )
-
-    def __str__(self):
-        return self.name + " - " + self.city.name
 
 
 class IssueReport(models.Model):

@@ -77,25 +77,25 @@ class ParkingSummariesSerializer(serializers.ModelSerializer):
     daily_income = serializers.SerializerMethodField()
     monthly_income = serializers.SerializerMethodField()
 
-    def get_all_ticket_count(self, obj):
+    def get_all_ticket_count(self, obj) -> int:
         return ParkingTicket.objects.filter(city=obj.user.city).count()
 
-    def get_expired_ticket_count(self, obj):
+    def get_expired_ticket_count(self, obj) -> int:
         return ParkingTicket.objects.filter(
             city=obj.user.city, status="expired"
         ).count()
 
-    def get_paid_ticket_count(self, obj):
+    def get_paid_ticket_count(self, obj) -> int:
         return ParkingTicket.objects.filter(city=obj.user.city, status="paid").count()
 
-    def get_daily_income(self, obj):
+    def get_daily_income(self, obj) -> float:
         today = now().date()
         total_income = ParkingTicket.objects.filter(
             city=obj.user.city, status="paid", issued_at__date=today
         ).aggregate(total_income=Sum("amount"))["total_income"]
         return total_income or 0
 
-    def get_monthly_income(self, obj):
+    def get_monthly_income(self, obj) -> float:
         first_day_of_month = now().replace(day=1)
         total_income = ParkingTicket.objects.filter(
             city=obj.user.city, status="paid", issued_at__gte=first_day_of_month

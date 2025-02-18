@@ -55,9 +55,12 @@ class announcement_detail(generics.RetrieveUpdateDestroyAPIView):
 class announcement_comments_list(generics.ListCreateAPIView):
     serializer_class = AnnouncementCommentSerializer
     permission_classes = [IsAuthenticated]
+    lookup_url_kwarg = "announcement_id"
 
     def get_queryset(self):
-        announcement_id = self.kwargs["announcement_id"]
+        if getattr(self, "swagger_fake_view", False):
+            return AnnouncementComment.objects.none()
+        announcement_id = self.kwargs.get("announcement_id")
         return AnnouncementComment.objects.filter(announcement_id=announcement_id)
 
     def perform_create(self, serializer):

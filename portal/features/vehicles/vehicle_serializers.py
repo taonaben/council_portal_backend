@@ -6,7 +6,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 
     ticket_count = serializers.SerializerMethodField(method_name="get_ticket_count")
 
-    def get_ticket_count(self, obj):
+    def get_ticket_count(self, obj) -> int:
         count = int(obj.parking_tickets.count())
         return count
 

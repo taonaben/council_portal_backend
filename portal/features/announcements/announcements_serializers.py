@@ -7,7 +7,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 
     comments_count = serializers.SerializerMethodField(method_name="get_comments_count")
 
-    def get_comments_count(self, obj):
+    def get_comments_count(self, obj: Announcement) -> int:
         return obj.announcement_comments.count()
 
     class Meta:
@@ -21,9 +21,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             "comments_count",
             "up_votes",
             "date_posted",
-
             "expires",
-            
             "expires_at",
         )
         read_only_fields = (

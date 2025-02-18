@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "silk",
     "drf_spectacular",
     "django_filters",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -134,6 +135,18 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Use Redis as broker
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+
+# Store results (optional)
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+# Define timezone
+CELERY_TIMEZONE = "Africa/Harare"
+
+# Accept JSON task serialization
+CELERY_TASK_SERIALIZER = "json"
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -160,6 +173,16 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API for Council Portal",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
 }
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

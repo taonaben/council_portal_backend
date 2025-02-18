@@ -7,7 +7,6 @@ from portal.features.announcements.announcements_urls import (
     urlpatterns as announcement_urls,
 )
 from portal.features.business.business_urls import urlpatterns as business_urls
-from portal.features.debts.debts_urls import urlpatterns as debt_urls
 from portal.features.issues.issues_urls import urlpatterns as issue_urls
 from portal.features.parking.parking_urls import urlpatterns as parking_urls
 from portal.features.pet_licensing.pet_licensing_urls import (
@@ -24,7 +23,6 @@ urlpatterns = [
     path("announcements/", include(announcement_urls)),
     path("cities/", include(city_urls)),
     path("business/", include(business_urls)),
-    path("debts/", include(debt_urls)),
     path("issues/", include(issue_urls)),
     path("parking/", include(parking_urls)),
     path("pet_licensing/", include(pet_licensing_urls)),
