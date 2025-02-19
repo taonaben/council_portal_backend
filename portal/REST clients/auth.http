@@ -1,0 +1,40 @@
+@access-token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5OTczODc0LCJpYXQiOjE3Mzk5NzIwNzQsImp0aSI6IjIyYjVlYWU5MzIwMDQxNjU4ODlhZjg4MWI3Zjk1ZGY3IiwidXNlcl9pZCI6MTR9.8-cAc2J80pQdTl9Ocem3aBq4MjJaFy_6-N8fjw_sK4A
+@refresh-token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0MDA1ODQ3NCwiaWF0IjoxNzM5OTcyMDc0LCJqdGkiOiI4YjAzOGI1OTNhMGU0YjVjOGNkODZhMDg4OTlhYjBlMSIsInVzZXJfaWQiOjE0fQ.gAWF2Ud2ZWrffTJed01rIPUQZ49OO0ghNQMrglYtybQ
+POST http://127.0.0.1:8000/auth/verify/ HTTP/1.1
+Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5OTYxMTgyLCJpYXQiOjE3Mzk5NjA4ODIsImp0aSI6IjRmN2NlYmMzMjVkNzQzZjQ5ZjQ0N2ZhZTI0ZDAxNmJiIiwidXNlcl9pZCI6MTR9.cFWjHWl0JMcOhDQyIBFW4JqpPl7lbWGd9CBrXy4Fmrg
+
+{
+    "username": "doohan",
+    "code": "660977"
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/login/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "test"
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/resend_code/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doohan"
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/logout/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{access-token}}
+
+{
+  "refresh": "{{refresh-token}}"
+}
+

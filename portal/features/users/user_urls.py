@@ -1,5 +1,5 @@
 from django.urls import path
-from portal.features.user import user_views as views
+from portal.features.users import user_views as views
 
 urlpatterns = [
     path('all/', views.user_list.as_view(), name='user_list'),

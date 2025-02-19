@@ -14,7 +14,7 @@ def update_water_meter(instance, **kwargs):
     instance.meter.save()
 
 
-@receiver(post_save, sender=WaterMeter)
+# @receiver(post_save, sender=WaterMeter)
 def generate_daily_water_usage():
     """Function to simulate daily water usage."""
     now = timezone.now()
@@ -32,7 +32,7 @@ def generate_daily_water_usage():
         meter.save()
 
 
-@receiver(post_save, sender=WaterMeter)
+# @receiver(post_save, sender=WaterMeter)
 def generate_monthly_water_bills():
     """Generate monthly water bills based on usage."""
     today = timezone.now().date()
@@ -61,7 +61,7 @@ def generate_monthly_water_bills():
         )
 
 
-@receiver(post_save, sender=WaterBill)
+# @receiver(post_save, sender=WaterBill)
 def change_water_bill_status():
     """Change the status of the water bill."""
     bill = WaterBill.objects.get(id=1)

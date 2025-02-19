@@ -13,14 +13,16 @@ from portal.features.pet_licensing.pet_licensing_urls import (
     urlpatterns as pet_licensing_urls,
 )
 from portal.features.taxes.tax_urls import urlpatterns as tax_urls
-from portal.features.user.user_urls import urlpatterns as user_urls
+from portal.features.users.user_urls import urlpatterns as user_urls
 from portal.features.vehicles.vehicle_urls import urlpatterns as vehicle_urls
 from portal.features.water.water_urls import urlpatterns as water_urls
 from media.media_control.media_urls import urlpatterns as media_urls
+from portal.features.auth.auth_urls import urlpatterns as auth_urls
 
 
 urlpatterns = [
     path("announcements/", include(announcement_urls)),
+    path("auth/", include(auth_urls)),
     path("cities/", include(city_urls)),
     path("business/", include(business_urls)),
     path("issues/", include(issue_urls)),
