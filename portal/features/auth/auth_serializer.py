@@ -13,9 +13,12 @@ class VerificationCodeSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("user",)
 
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
 
-    def validate(self, attrs):
-        return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+
+class ResendCodeSerializer(serializers.Serializer):
+    username = serializers.CharField()

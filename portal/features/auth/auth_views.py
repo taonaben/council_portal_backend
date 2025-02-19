@@ -7,7 +7,9 @@ from portal.features.auth.send_code import send_verification_code_via_email
 from portal.models import User, VerificationCode
 from portal.features.auth.auth_serializer import (
     VerificationCodeSerializer,
-    LoginSerializer,
+   
+    LogoutSerializer,
+    ResendCodeSerializer
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +19,7 @@ from rest_framework import generics
 
 class ResendCode(generics.CreateAPIView):
     permission_classes = [AllowAny]
+    serializer_class = ResendCodeSerializer
 
     def post(self, request):
         username = request.data.get("username")
@@ -58,6 +61,7 @@ class VerifyCodeView(generics.CreateAPIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = LogoutSerializer
 
     def post(self, request):
         try:
