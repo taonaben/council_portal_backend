@@ -97,7 +97,7 @@ DATABASES = {
         "USER": config("db_user", default="fallback-db-user"),
         "PASSWORD": config("db_password", default="fallback-db-password"),
         "HOST": config("db_host", default="fallback-db-host"),
-        "PORT": config("db_port", default="fallback-db-port", cast=int),
+        "PORT": config("db_port", default="fallback-db-port"),
     }
 }
 
