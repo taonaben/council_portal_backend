@@ -93,10 +93,10 @@ WSGI_APPLICATION = "portal.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("db_name"),
-        "USER": config("db_user"),
-        "PASSWORD": config("db_password"),
-        "HOST": config("db_host"),
+        "NAME": "council_portal",
+        "USER": "postgres",
+        "PASSWORD": "!Projectbaby1809",
+        "HOST": "localhost",
         "PORT": 5432,
     }
 }
