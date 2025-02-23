@@ -23,9 +23,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-from portal.sensitive_stuff.settings_secret_key import secret_key
 
-SECRET_KEY = secret_key
+from decouple import config
+
+SECRET_KEY = config("SECRET_KEY", default="fallback-secret-key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,16 +88,16 @@ WSGI_APPLICATION = "portal.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-from portal.sensitive_stuff.database_config_settings import *
+# from portal.sensitive_stuff.database_config_settings import *
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": db_name,
-        "USER": db_user,
-        "PASSWORD": db_password,
-        "HOST": db_host,  # or your database host
-        "PORT": db_port,  # default postgres port
+        "NAME": config("db_name", default="fallback-db-name"),
+        "USER": config("db_user", default="fallback-db-user"),
+        "PASSWORD": config("db_password", default="fallback-db-password"),
+        "HOST": config("db_host", default="fallback-db-host"),
+        "PORT": config("db_port", default="fallback-db-port", cast=int),
     }
 }
 
@@ -156,15 +158,15 @@ CELERY_TASK_SERIALIZER = "json"
 
 # This setting informs Django of the URI path from which your static files will be served to users
 # Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 # This production code might break development mode, so we check whether we're in DEBUG mode
 if not DEBUG:
     # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
     # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -237,7 +239,7 @@ uncomment to use real email backend
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'munikwataona09@gmail.com'
-# EMAIL_HOST_PASSWORD = email_app_password
+# EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="fallback-email-password")
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
