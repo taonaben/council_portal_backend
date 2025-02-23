@@ -6,6 +6,7 @@ from django.db import models
 import uuid
 import string
 from django.utils import timezone
+
 review_enums = {
     "pending": "pending",
     "approved": "approved",
@@ -661,6 +662,3 @@ class TaxExemption(models.Model):
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField()
-
-
-
