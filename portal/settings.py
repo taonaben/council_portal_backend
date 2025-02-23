@@ -93,10 +93,10 @@ WSGI_APPLICATION = "portal.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("db_name", default="fallback-db-name"),
-        "USER": config("db_user", default="fallback-db-user"),
-        "PASSWORD": config("db_password", default="fallback-db-password"),
-        "HOST": config("db_host", default="fallback-db-host"),
+        "NAME": config("db_name"),
+        "USER": config("db_user"),
+        "PASSWORD": config("db_password"),
+        "HOST": config("db_host"),
         "PORT": 5432,
     }
 }
