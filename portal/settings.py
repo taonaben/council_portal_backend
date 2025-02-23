@@ -107,7 +107,14 @@ open this db when deploying
 
 """
 
-#  DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+
+render_external_db_url = "postgresql://taona:4IBkxjhj9ZwQPsPPkey8ccSB2EXa6r6V@dpg-cutla99opnds739o9oeg-a.oregon-postgres.render.com/council_portal_65op"
+
+DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+
+
+# Password validation
+# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 
 # Password validation
