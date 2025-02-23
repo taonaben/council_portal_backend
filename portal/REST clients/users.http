@@ -1,0 +1,4 @@
+@access-token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwMDU2NzA3LCJpYXQiOjE3Mzk5NzAzMDcsImp0aSI6IjkxMDhkZGU2MDA4YjRhZjQ5N2IyNTc4NjVkYjc4MDIzIiwidXNlcl9pZCI6MTR9.fLaEw8OqPaKoP1ihY5V7oQFMxfPrlDYtIcX6G66e7uQ
+
+GET http://127.0.0.1:8000/users/16/ HTTP/1.1
+Authorization: Bearer {{access-token}}

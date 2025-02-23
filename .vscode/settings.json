@@ -1,5 +1,7 @@
 {
     "python.analysis.extraPaths": [
         "./portal/features/properties"
-    ]
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "off"
 }

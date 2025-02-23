@@ -6,7 +6,6 @@ from django.db import models
 import uuid
 import string
 from django.utils import timezone
-
 review_enums = {
     "pending": "pending",
     "approved": "approved",
@@ -25,9 +24,9 @@ class City(models.Model):
 
 class CitySection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    section = models.CharField(
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="sections")
+    name = models.CharField(max_length=70)
+    density = models.CharField(
         max_length=50,
         choices=[
             ("low", "low"),
@@ -42,7 +41,29 @@ class CitySection(models.Model):
 
 
 class User(AbstractUser):
+    is_active = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=15, unique=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+
+
+class VerificationCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(
+                minutes=5
+            )  # Code expires in 5 minutes
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"{self.user.username} - {self.code}"
 
 
 class Property(models.Model):
@@ -640,3 +661,6 @@ class TaxExemption(models.Model):
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField()
+
+
+
