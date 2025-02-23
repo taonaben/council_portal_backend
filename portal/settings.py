@@ -90,16 +90,16 @@ WSGI_APPLICATION = "portal.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 # from portal.sensitive_stuff.database_config_settings import *
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": config("db_name", default="fallback-db-name"),
-#         "USER": config("db_user", default="fallback-db-user"),
-#         "PASSWORD": config("db_password", default="fallback-db-password"),
-#         "HOST": config("db_host", default="fallback-db-host"),
-#         "PORT": 5432,
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("db_name", default="fallback-db-name"),
+        "USER": config("db_user", default="fallback-db-user"),
+        "PASSWORD": config("db_password", default="fallback-db-password"),
+        "HOST": config("db_host", default="fallback-db-host"),
+        "PORT": 5432,
+    }
+}
 
 """
 
@@ -107,9 +107,7 @@ open this db when deploying
 
 """
 
-render_external_db_url = config("render_external_db_url", default="fallback-db-url")
-
-DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+#  DATABASES["default"] = dj_database_url.parse(render_external_db_url)
 
 
 # Password validation
