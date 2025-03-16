@@ -363,6 +363,7 @@ class ParkingTicket(models.Model):
         City, on_delete=models.DO_NOTHING, related_name="parking_tickets", null=True
     )
     issued_at = models.DateTimeField(auto_now_add=True)
+    time_in = models.TimeField(null=True, blank=True)
     expiry_at = models.DateTimeField(null=True, blank=True)
     amount = models.FloatField(null=False, default=0)
 
@@ -379,11 +380,12 @@ class ParkingTicket(models.Model):
 
     STATUS_CHOICES = [
         ("active", "Active"),
-        ("expired", "Expired"),
+        ("inactive", "Inactive"),
         ("used", "Used"),
+        ("expired", "Expired")
     ]
 
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="inactive")
 
     def get_issues_time(self):
         return {
@@ -407,11 +409,19 @@ class ParkingTicket(models.Model):
         if self.expiry_at and now >= self.expiry_at:
             self.status = "expired"
 
+    def activate_ticket(self):
+        """Activates the ticket by setting the status to 'active' and calculates expiry."""
+        if self.status == "inactive":
+            self.status = "active"
+            self.time_in = timezone.now()
+            self.expiry_at = self.time_in + timedelta(minutes=self.get_issues_time())
+            self.save()
+
     def save(self, *args, **kwargs):
         """Ensures correct values are set before saving."""
         if not self.expiry_at:  # Ensure expiry is only set once
             if self.issued_at:
-                self.expiry_at = self.issued_at + timedelta(
+                self.expiry_at = self.time_in + timedelta(
                     minutes=self.get_issues_time()
                 )
 
@@ -456,7 +466,6 @@ class ParkingTicket(models.Model):
         return (
             f"{self.car.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
         )
-
 
 class IssueReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
