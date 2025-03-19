@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, date
 
 import random
+import re
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
@@ -42,9 +43,23 @@ class CitySection(models.Model):
 
 
 class User(AbstractUser):
+
+    def create_acc_num(self):
+        while True:
+            acc_num = f"{random.randint(100, 999)}-{random.randint(1000, 9999)}-{random.randint(10, 99)}"
+            if not User.objects.filter(account_number=acc_num).exists():
+                return acc_num
+
     is_active = models.BooleanField(default=False)
+    account_number = models.CharField(max_length=12, unique=True, null=True)
     phone_number = models.CharField(max_length=15, unique=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.account_number:
+            self.account_number = self.create_acc_num()
+
+        super().save(*args, **kwargs)
 
 
 class VerificationCode(models.Model):
@@ -98,22 +113,102 @@ class Property(models.Model):
         return self.address + " - " + self.owner.username + "(" + self.city.name + ")"
 
 
+### W A T E R ###
+class Account(models.Model):
+    account_number = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=255)
+    address = models.ForeignKey(Property, on_delete=models.DO_NOTHING, null=True, related_name="accounts")
+
+    def __str__(self):
+        return f"{self.account_number} - {self.name}"
+
+
+class BillingPeriod(models.Model):
+    last_receipt_date = models.DateField(null=True, blank=True)
+    bill_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.last_receipt_date:
+            previous_period = BillingPeriod.objects.order_by("-bill_date").first()
+            self.last_receipt_date = (
+                previous_period.last_receipt_date if previous_period else date.today()
+            )
+
+        if not self.due_date:
+            self.due_date = self.last_receipt_date + timedelta(days=30)
+
+        super().save(*args, **kwargs)
+
+
+class Charges(models.Model):
+    balance_forward = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    water_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    sewerage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    street_lighting = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    roads_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    education_levy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_due = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def get_total_due(self):
+        return sum(
+            [
+                self.balance_forward,
+                self.water_charges,
+                self.sewerage,
+                self.street_lighting,
+                self.roads_charge,
+                self.education_levy,
+            ]
+        )
+
+    def save(self, *args, **kwargs):
+        self.total_due = self.get_total_due()
+        super().save(*args, **kwargs)
+
+
+class PaymentDetails(models.Model):
+    pay_before_or_on = models.DateField(null=True, blank=True)
+    amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    vat_inclusive = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def save(self, *args, **kwargs):
+        if not self.vat_inclusive:
+            self.vat_inclusive = self.amount_due * 0.12  # Adjust VAT logic as needed
+        super().save(*args, **kwargs)
+
+
 class WaterBill(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    water_used = models.FloatField()
-    meter_number = models.IntegerField()
-    amount_owed = models.FloatField()
-    amount_paid = models.FloatField(null=True)
-    status = models.CharField(
-        max_length=50,
-        choices=[("pending", "pending"), ("paid", "paid")],
-        default="pending",
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="water_bills")
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True, related_name="water_bills")
+    bill_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, null=True)
+    billing_period = models.OneToOneField(
+        BillingPeriod,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="billing_period",
+    )
+    charges = models.OneToOneField(Charges, on_delete=models.CASCADE, null=True)
+    payment_details = models.OneToOneField(
+        PaymentDetails, on_delete=models.CASCADE, null=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def create_bill_number(self):
+        while True:
+            bill_number = str(random.randint(100000, 999999))
+            if not WaterBill.objects.filter(bill_number=bill_number).exists():
+                return bill_number
+
+    def save(self, *args, **kwargs):
+        if not self.bill_number:
+            self.bill_number = self.create_bill_number()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.property.address + " - " + str(self.amount)
+        return f"Bill #{self.bill_number} - {self.city.name if self.city else 'N/A'}"
 
 
 class WaterMeter(models.Model):
@@ -382,7 +477,7 @@ class ParkingTicket(models.Model):
         ("active", "Active"),
         ("inactive", "Inactive"),
         ("used", "Used"),
-        ("expired", "Expired")
+        ("expired", "Expired"),
     ]
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="inactive")
@@ -466,6 +561,7 @@ class ParkingTicket(models.Model):
         return (
             f"{self.car.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
         )
+
 
 class IssueReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

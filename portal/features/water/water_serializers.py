@@ -27,7 +27,6 @@ class WaterUsageSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "meter",
-            "property",
             "consumption",
             "date_recorded",
         )
@@ -42,29 +41,38 @@ class WaterBillSerializer(serializers.ModelSerializer):
         model = WaterBill
         fields = (
             "id",
-            "property",
-            "water_used",
-            "meter_number",
-            "amount_owed",
-            "amount_paid",
-            "status",
+            "user",
+            "account",
+            "city",
+            "bill_number",
+            "charges",
+            "payment_details",
+            "billing_period",
             "created_at",
         )
 
-        read_only_fields = (
-            "id",
-            "property",
-            "water_used",
-            "amount_owed",
-            "status",
-            "created_at",
-        )
+        # read_only_fields = (
+        #     "id",
+        #     "user",
+        #     "account",
+        #     "bill_number",
+        #     "charges",
+        #     "payment_details",
+        #     "billing_period",
+        #     "created_at",
+        # )
+
 
 class TotalWaterDebtSerializer(serializers.Serializer):
-    total_amount_owed = serializers.SerializerMethodField(method_name="get_total_amount_owed")
+    total_amount_owed = serializers.SerializerMethodField(
+        method_name="get_total_amount_owed"
+    )
 
     def get_total_amount_owed(self, obj) -> float:
-        return WaterBill.objects.aggregate(total_owed=Sum('amount_owed'))['total_owed'] or 0
-    
+        return (
+            WaterBill.objects.aggregate(total_owed=Sum("amount_owed"))["total_owed"]
+            or 0
+        )
+
     class Meta:
-        fields = ('total_amount_owed',)
+        fields = ("total_amount_owed",)
