@@ -1,5 +1,15 @@
+from pyexpat import model
+from turtle import mode
 from rest_framework import serializers
-from portal.models import WaterBill, WaterMeter, WaterUsage
+from portal.models import (
+    WaterBill,
+    WaterMeter,
+    WaterUsage,
+    Account,
+    BillingPeriod,
+    Charges,
+    PaymentDetails,
+)
 from django.db.models import Sum
 
 
@@ -36,7 +46,57 @@ class WaterUsageSerializer(serializers.ModelSerializer):
         }
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = (
+            "account_number",
+            "name",
+            "address",
+        )
+
+
+class BillingPeriodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingPeriod
+        fields = (
+            "last_receipt_date",
+            "bill_date",
+            "due_date",
+        )
+
+
+class ChargesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Charges
+        fields = (
+            "balance_forward",
+            "water_charges",
+            "sewerage",
+            "street_lighting",
+            "roads_charge",
+            "education_levy",
+            "total_due",
+        )
+
+
+class PaymentDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentDetails
+        fields = (
+            "pay_before_or_on",
+            "amount_due",
+            "vat_inclusive",
+        )
+
+
 class WaterBillSerializer(serializers.ModelSerializer):
+
+    account = AccountSerializer(many=False)
+    billing_period = BillingPeriodSerializer(many=False)
+    charges = ChargesSerializer(many=False)
+    payment_details = PaymentDetailsSerializer(many=False)
+
     class Meta:
         model = WaterBill
         fields = (
@@ -51,16 +111,16 @@ class WaterBillSerializer(serializers.ModelSerializer):
             "created_at",
         )
 
-        # read_only_fields = (
-        #     "id",
-        #     "user",
-        #     "account",
-        #     "bill_number",
-        #     "charges",
-        #     "payment_details",
-        #     "billing_period",
-        #     "created_at",
-        # )
+        read_only_fields = (
+            "id",
+            "user",
+            "account",
+            "bill_number",
+            "charges",
+            "payment_details",
+            "billing_period",
+            "created_at",
+        )
 
 
 class TotalWaterDebtSerializer(serializers.Serializer):

@@ -162,6 +162,19 @@ class Charges(models.Model):
             ]
         )
 
+    @property
+    def check_numbers(self):
+        return all(
+            value > 0 for value in [
+                self.balance_forward,
+                self.water_charges,
+                self.sewerage,
+                self.street_lighting,
+                self.roads_charge,
+                self.education_levy
+            ]
+        )
+
     def save(self, *args, **kwargs):
         self.total_due = self.get_total_due()
         super().save(*args, **kwargs)
