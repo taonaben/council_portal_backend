@@ -1,8 +1,13 @@
 from rest_framework import serializers
-from portal.models import User
+from portal.features.user_accounts.account_serializer import AccountSerializer
+from portal.models import User, Account
+from portal.features.water.water_serializers import Account
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    accounts = AccountSerializer(many=True, read_only=False)
+
     class Meta:
         model = User
         fields = (
@@ -10,16 +15,24 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "accounts",
             "email",
             "phone_number",
             "password",
+            "properties",
             "city",
             "is_staff",
             "is_superuser",
             "is_active",
         )
 
-        read_only_fields = ("id",)
+        read_only_fields = (
+            "id",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+            "properties",
+        )
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):

@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 class user_list(generics.ListCreateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    
     
 
     def get_permissions(self):
@@ -18,8 +18,7 @@ class user_list(generics.ListCreateAPIView):
         return super().get_permissions()
 
     def get_queryset(self):
-        # return User.objects.filter(city=self.request.user.city)  # filter by admin city
-        return User.objects.all()
+        return User.objects.filter(city=self.request.user.city)  # filter by admin city
 
     def perform_create(self, serializer):
         serializer.save(is_active=False)
@@ -38,3 +37,5 @@ class user_detail(generics.RetrieveUpdateDestroyAPIView):
     
     def perform_destroy(self, instance):
         instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

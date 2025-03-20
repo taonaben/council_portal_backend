@@ -42,24 +42,45 @@ class CitySection(models.Model):
         return self.name + " - " + self.city.name
 
 
-class User(AbstractUser):
+class Account(models.Model):
 
     def create_acc_num(self):
         while True:
             acc_num = f"{random.randint(100, 999)}-{random.randint(1000, 9999)}-{random.randint(10, 99)}"
-            if not User.objects.filter(account_number=acc_num).exists():
+            if not Account.objects.filter(account_number=acc_num).exists():
                 return acc_num
 
-    is_active = models.BooleanField(default=False)
-    account_number = models.CharField(max_length=12, unique=True, null=True)
-    phone_number = models.CharField(max_length=15, unique=True, null=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+    account_number = models.CharField(max_length=20, unique=True)
+    user = models.ForeignKey(
+        "User", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
+    )
+    property = models.ForeignKey(
+        "Property", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if not self.account_number:
             self.account_number = self.create_acc_num()
 
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.account_number}"
+
+
+class User(AbstractUser):
+
+    is_active = models.BooleanField(default=False)
+    # accounts = models.ManyToManyField(
+    #     Account,
+    #     null=True,
+    # )
+    phone_number = models.CharField(max_length=15, unique=True, null=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.username
 
 
 class VerificationCode(models.Model):
@@ -84,7 +105,7 @@ class VerificationCode(models.Model):
 
 class Property(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="properties")
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     community = models.ForeignKey(CitySection, on_delete=models.CASCADE)
     area_sq_m = models.FloatField()
@@ -114,23 +135,16 @@ class Property(models.Model):
 
 
 ### W A T E R ###
-class Account(models.Model):
-    account_number = models.CharField(max_length=20, unique=True)
-    name = models.CharField(max_length=255)
-    address = models.ForeignKey(Property, on_delete=models.DO_NOTHING, null=True, related_name="accounts")
-
-    def __str__(self):
-        return f"{self.account_number} - {self.name}"
 
 
-class BillingPeriod(models.Model):
+class BillingDetails(models.Model):
     last_receipt_date = models.DateField(null=True, blank=True)
     bill_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.last_receipt_date:
-            previous_period = BillingPeriod.objects.order_by("-bill_date").first()
+            previous_period = BillingDetails.objects.order_by("-bill_date").first()
             self.last_receipt_date = (
                 previous_period.last_receipt_date if previous_period else date.today()
             )
@@ -165,13 +179,14 @@ class Charges(models.Model):
     @property
     def check_numbers(self):
         return all(
-            value > 0 for value in [
+            value > 0
+            for value in [
                 self.balance_forward,
                 self.water_charges,
                 self.sewerage,
                 self.street_lighting,
                 self.roads_charge,
-                self.education_levy
+                self.education_levy,
             ]
         )
 
@@ -180,33 +195,35 @@ class Charges(models.Model):
         super().save(*args, **kwargs)
 
 
-class PaymentDetails(models.Model):
-    pay_before_or_on = models.DateField(null=True, blank=True)
-    amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    vat_inclusive = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-
-    def save(self, *args, **kwargs):
-        if not self.vat_inclusive:
-            self.vat_inclusive = self.amount_due * 0.12  # Adjust VAT logic as needed
-        super().save(*args, **kwargs)
-
 
 class WaterBill(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="water_bills")
-    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True, related_name="water_bills")
-    bill_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, null=True)
-    billing_period = models.OneToOneField(
-        BillingPeriod,
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
         null=True,
+        blank=True,
+        related_name="water_bills",
+    )
+
+    city = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_bills",
+    )
+    bill_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    account_number = models.CharField(max_length=20, null=False)  # New field
+    billing_period = models.OneToOneField(
+        BillingDetails,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="billing_period",
     )
     charges = models.OneToOneField(Charges, on_delete=models.CASCADE, null=True)
-    payment_details = models.OneToOneField(
-        PaymentDetails, on_delete=models.CASCADE, null=True
-    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def create_bill_number(self):
@@ -218,6 +235,11 @@ class WaterBill(models.Model):
     def save(self, *args, **kwargs):
         if not self.bill_number:
             self.bill_number = self.create_bill_number()
+
+        # Check if account exists by account number
+        if not Account.objects.filter(account_number=self.account_number).exists():
+            raise ValueError("Account with this account number does not exist.")
+
         super().save(*args, **kwargs)
 
     def __str__(self):
