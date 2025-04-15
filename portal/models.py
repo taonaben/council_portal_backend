@@ -448,6 +448,17 @@ class Vehicle(models.Model):
     brand = models.CharField(max_length=50, null=True)
     model = models.CharField(max_length=50, null=True)
     color = models.CharField(max_length=50, null=True)
+    image = models.ImageField(upload_to="vehicle_images/", null=True, blank=True)
+    vehicle_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("car", "car"),
+            ("motorcycle", "motorcycle"),
+            ("truck", "truck"),
+            ("bus", "bus"),
+            ("other", "other"),
+        ],
+        null=True,)
     tax = models.ForeignKey("Tax", on_delete=models.CASCADE, null=True)
     document = models.FileField(upload_to="vehicle_documents/", null=True, blank=True)
     approval_status = models.CharField(
