@@ -34,7 +34,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "council-portal.onrender.com",
-    
+    "localhost",
+    "127.0.0.1",
 ]
 
 
@@ -111,9 +112,9 @@ open this db when deploying
 """
 
 
-render_external_db_url = "postgresql://taona:4IBkxjhj9ZwQPsPPkey8ccSB2EXa6r6V@dpg-cutla99opnds739o9oeg-a.oregon-postgres.render.com/council_portal_65op"
+# render_external_db_url = "postgresql://taona:4IBkxjhj9ZwQPsPPkey8ccSB2EXa6r6V@dpg-cutla99opnds739o9oeg-a.oregon-postgres.render.com/council_portal_65op"
 
-DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+# DATABASES["default"] = dj_database_url.parse(render_external_db_url)
 
 
 # Password validation
@@ -197,6 +198,8 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
 }
 
 SIMPLE_JWT = {

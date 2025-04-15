@@ -1,16 +1,25 @@
+from math import perm
+
+from yaml import serialize
 from portal.models import ParkingTicket
 from portal.features.parking.parking_serializers import (
     ParkingTicketSerializer,
     ParkingSummariesSerializer,
+    WeeklyIncomeSerializer,
 )
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import pagination
 
 # from portal.features.vehicles.vehicle_filters import VehicleReviewFilter, VehicleFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from django.utils.timezone import now
+from django.db.models import Sum
+from datetime import timedelta
 
 """
     PERMISSIONS
@@ -41,6 +50,10 @@ class ParkingList(generics.ListCreateAPIView):
 
     serializer_class = ParkingTicketSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = pagination.PageNumberPagination
+    # pagination_class.page_size = 2
+    pagination_class.page_size_query_param = "page_size"
+    max_page_size = 100
 
     def get_queryset(self):
         user = self.request.user
@@ -61,17 +74,67 @@ class ParkingList(generics.ListCreateAPIView):
             ticket.save()
 
 
-class ParkingSummary(generics.ListAPIView):
-    """
-    Admin-only view that provides summaries of paid parking tickets,
-    including daily and monthly income.
-    """
-
-    serializer_class = ParkingSummariesSerializer
+class ParkingSummary(APIView):
     permission_classes = [IsAdminUser]
 
-    def get_queryset(self):
-        return ParkingTicket.objects.filter(city=self.request.user.city)
+    def get(self, request):
+        city = request.user.city
+        today = now().date()
+        first_day_of_week = today - timedelta(days=today.weekday())
+        first_day_of_month = today.replace(day=1)
+
+        summaries = {
+            "all_ticket_count": ParkingTicket.objects.filter(city=city).count(),
+            "expired_ticket_count": ParkingTicket.objects.filter(
+                city=city, status="expired"
+            ).count(),
+            "paid_ticket_count": ParkingTicket.objects.filter(
+                city=city,
+            ).count(),
+            "daily_ticket_count": ParkingTicket.objects.filter(
+                city=city, issued_at__date=today
+            ).count(),
+            "weekly_ticket_count": ParkingTicket.objects.filter(
+                city=city, issued_at__gte=first_day_of_week
+            ).count(),
+            "monthly_ticket_count": ParkingTicket.objects.filter(
+                city=city, issued_at__gte=first_day_of_month
+            ).count(),
+            "daily_income": ParkingTicket.objects.filter(
+                city=city, issued_at__date=today
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0,
+            "weekly_income": ParkingTicket.objects.filter(
+                city=city, issued_at__gte=first_day_of_week
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0,
+            "monthly_income": ParkingTicket.objects.filter(
+                city=city, issued_at__gte=first_day_of_month
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0,
+        }
+
+        serializer = ParkingSummariesSerializer(summaries)
+        return Response(serializer.data)
+
+
+class WeeklyIncomeParkingSummary(APIView):
+    """
+    Admin-only view that provides summaries of paid parking tickets,
+    including weekly income.
+    """
+
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # Use the serializer to get the total income for each of the last 7 days
+        serializer = WeeklyIncomeSerializer()
+
+        weekly_income = serializer.to_representation(
+            None
+        )  # None because we're not passing an instance
+
+        return Response(weekly_income)
 
 
 class ParkingDetail(generics.RetrieveUpdateDestroyAPIView):

@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, date
 
 import random
+import re
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
@@ -41,10 +42,45 @@ class CitySection(models.Model):
         return self.name + " - " + self.city.name
 
 
+class Account(models.Model):
+
+    def create_acc_num(self):
+        while True:
+            acc_num = f"{random.randint(100, 999)}-{random.randint(1000, 9999)}-{random.randint(10, 99)}"
+            if not Account.objects.filter(account_number=acc_num).exists():
+                return acc_num
+
+    account_number = models.CharField(max_length=20, unique=True)
+    user = models.ForeignKey(
+        "User", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
+    )
+    property = models.ForeignKey(
+        "Property", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.account_number:
+            self.account_number = self.create_acc_num()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.account_number}"
+
+
 class User(AbstractUser):
+
     is_active = models.BooleanField(default=False)
+    # accounts = models.ManyToManyField(
+    #     Account,
+    #     null=True,
+    # )
     phone_number = models.CharField(max_length=15, unique=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.username
 
 
 class VerificationCode(models.Model):
@@ -69,7 +105,7 @@ class VerificationCode(models.Model):
 
 class Property(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="properties")
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     community = models.ForeignKey(CitySection, on_delete=models.CASCADE)
     area_sq_m = models.FloatField()
@@ -98,22 +134,116 @@ class Property(models.Model):
         return self.address + " - " + self.owner.username + "(" + self.city.name + ")"
 
 
+### W A T E R ###
+
+
+class BillingDetails(models.Model):
+    last_receipt_date = models.DateField(null=True, blank=True)
+    bill_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.last_receipt_date:
+            previous_period = BillingDetails.objects.order_by("-bill_date").first()
+            self.last_receipt_date = (
+                previous_period.last_receipt_date if previous_period else date.today()
+            )
+
+        if not self.due_date:
+            self.due_date = self.last_receipt_date + timedelta(days=30)
+
+        super().save(*args, **kwargs)
+
+
+class Charges(models.Model):
+    balance_forward = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    water_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    sewerage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    street_lighting = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    roads_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    education_levy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_due = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def get_total_due(self):
+        return sum(
+            [
+                self.balance_forward,
+                self.water_charges,
+                self.sewerage,
+                self.street_lighting,
+                self.roads_charge,
+                self.education_levy,
+            ]
+        )
+
+    @property
+    def check_numbers(self):
+        return all(
+            value > 0
+            for value in [
+                self.balance_forward,
+                self.water_charges,
+                self.sewerage,
+                self.street_lighting,
+                self.roads_charge,
+                self.education_levy,
+            ]
+        )
+
+    def save(self, *args, **kwargs):
+        self.total_due = self.get_total_due()
+        super().save(*args, **kwargs)
+
+
+
 class WaterBill(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    water_used = models.FloatField()
-    meter_number = models.IntegerField()
-    amount_owed = models.FloatField()
-    amount_paid = models.FloatField(null=True)
-    status = models.CharField(
-        max_length=50,
-        choices=[("pending", "pending"), ("paid", "paid")],
-        default="pending",
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_bills",
     )
+
+    city = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_bills",
+    )
+    bill_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    account_number = models.CharField(max_length=20, null=False)  # New field
+    billing_period = models.OneToOneField(
+        BillingDetails,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="billing_period",
+    )
+    charges = models.OneToOneField(Charges, on_delete=models.CASCADE, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def create_bill_number(self):
+        while True:
+            bill_number = str(random.randint(100000, 999999))
+            if not WaterBill.objects.filter(bill_number=bill_number).exists():
+                return bill_number
+
+    def save(self, *args, **kwargs):
+        if not self.bill_number:
+            self.bill_number = self.create_bill_number()
+
+        # Check if account exists by account number
+        if not Account.objects.filter(account_number=self.account_number).exists():
+            raise ValueError("Account with this account number does not exist.")
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.property.address + " - " + str(self.amount)
+        return f"Bill #{self.bill_number} - {self.city.name if self.city else 'N/A'}"
 
 
 class WaterMeter(models.Model):
@@ -363,6 +493,7 @@ class ParkingTicket(models.Model):
         City, on_delete=models.DO_NOTHING, related_name="parking_tickets", null=True
     )
     issued_at = models.DateTimeField(auto_now_add=True)
+    time_in = models.TimeField(null=True, blank=True)
     expiry_at = models.DateTimeField(null=True, blank=True)
     amount = models.FloatField(null=False, default=0)
 
@@ -379,11 +510,12 @@ class ParkingTicket(models.Model):
 
     STATUS_CHOICES = [
         ("active", "Active"),
-        ("expired", "Expired"),
+        ("inactive", "Inactive"),
         ("used", "Used"),
+        ("expired", "Expired"),
     ]
 
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="inactive")
 
     def get_issues_time(self):
         return {
@@ -407,11 +539,19 @@ class ParkingTicket(models.Model):
         if self.expiry_at and now >= self.expiry_at:
             self.status = "expired"
 
+    def activate_ticket(self):
+        """Activates the ticket by setting the status to 'active' and calculates expiry."""
+        if self.status == "inactive":
+            self.status = "active"
+            self.time_in = timezone.now()
+            self.expiry_at = self.time_in + timedelta(minutes=self.get_issues_time())
+            self.save()
+
     def save(self, *args, **kwargs):
         """Ensures correct values are set before saving."""
         if not self.expiry_at:  # Ensure expiry is only set once
             if self.issued_at:
-                self.expiry_at = self.issued_at + timedelta(
+                self.expiry_at = self.time_in + timedelta(
                     minutes=self.get_issues_time()
                 )
 

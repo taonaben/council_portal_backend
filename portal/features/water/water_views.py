@@ -99,14 +99,14 @@ class water_usage_detail(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class water_bill_list(generics.ListAPIView):
+class water_bill_list(generics.ListCreateAPIView):
 
     serializer_class = WaterBillSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return WaterBill.objects.filter(property__city=self.request.user.city)
+            return WaterBill.objects.filter(city=self.request.user.city)
 
         return WaterBill.objects.filter(property__owner=self.request.user)
 

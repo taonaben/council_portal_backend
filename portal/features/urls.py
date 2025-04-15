@@ -18,6 +18,7 @@ from portal.features.vehicles.vehicle_urls import urlpatterns as vehicle_urls
 from portal.features.water.water_urls import urlpatterns as water_urls
 from media.media_control.media_urls import urlpatterns as media_urls
 from portal.features.auth.auth_urls import urlpatterns as auth_urls
+from portal.features.user_accounts.account_urls import urlpatterns as account_urls
 
 
 urlpatterns = [
@@ -31,6 +32,7 @@ urlpatterns = [
     path("properties/", include(property_urls)),
     path("taxes/", include(tax_urls)),
     path("users/", include(user_urls)),
+    path("accounts/", include(account_urls)),
     path("vehicles/", include(vehicle_urls)),
     path("water/", include(water_urls)),
     path("", include(media_urls)),

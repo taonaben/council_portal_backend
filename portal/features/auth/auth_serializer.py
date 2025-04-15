@@ -11,9 +11,6 @@ class VerificationCodeSerializer(serializers.ModelSerializer):
             "user",
             "code",
         )
-        read_only_fields = ("user",)
-
-
 
 
 class LogoutSerializer(serializers.Serializer):

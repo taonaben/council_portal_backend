@@ -1,5 +1,14 @@
+from os import read
 from rest_framework import serializers
-from portal.models import WaterBill, WaterMeter, WaterUsage
+from portal.features.user_accounts.account_serializer import AccountSerializer
+from portal.models import (
+    WaterBill,
+    WaterMeter,
+    WaterUsage,
+    Account,
+    BillingDetails,
+    Charges,
+)
 from django.db.models import Sum
 
 
@@ -27,7 +36,6 @@ class WaterUsageSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "meter",
-            "property",
             "consumption",
             "date_recorded",
         )
@@ -37,34 +45,86 @@ class WaterUsageSerializer(serializers.ModelSerializer):
         }
 
 
+class BillingPeriodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingDetails
+        fields = (
+            "last_receipt_date",
+            "bill_date",
+            "due_date",
+        )
+
+        # read_only_fields = ("last_receipt_date", "bill_date", "due_date")
+
+
+class ChargesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Charges
+        fields = (
+            "balance_forward",
+            "water_charges",
+            "sewerage",
+            "street_lighting",
+            "roads_charge",
+            "education_levy",
+            "total_due",
+        )
+
+        read_only_fields = ("total_due",)
+
+
 class WaterBillSerializer(serializers.ModelSerializer):
+
+    account_number = serializers.CharField()  # New field
+    billing_period = BillingPeriodSerializer(many=False)
+    charges = ChargesSerializer(many=False)
+
     class Meta:
         model = WaterBill
         fields = (
             "id",
-            "property",
-            "water_used",
-            "meter_number",
-            "amount_owed",
-            "amount_paid",
-            "status",
+            "user",
+            "account_number",  # New field
+            "city",
+            "bill_number",
+            "charges",
+            "billing_period",
             "created_at",
         )
 
         read_only_fields = (
             "id",
-            "property",
-            "water_used",
-            "amount_owed",
-            "status",
+            "bill_number",
+            "charges",
+            "billing_period",
             "created_at",
         )
 
+    def create(self, validated_data):
+        billing_period_data = validated_data.pop("billing_period")
+        charges_data = validated_data.pop("charges")
+
+        billing_period = BillingDetails.objects.create(**billing_period_data)
+        charges = Charges.objects.create(**charges_data)
+
+        water_bill = WaterBill.objects.create(
+            billing_period=billing_period,
+            charges=charges,
+            **validated_data
+        )
+        return water_bill
+
+
 class TotalWaterDebtSerializer(serializers.Serializer):
-    total_amount_owed = serializers.SerializerMethodField(method_name="get_total_amount_owed")
+    total_amount_owed = serializers.SerializerMethodField(
+        method_name="get_total_amount_owed"
+    )
 
     def get_total_amount_owed(self, obj) -> float:
-        return WaterBill.objects.aggregate(total_owed=Sum('amount_owed'))['total_owed'] or 0
-    
+        return (
+            WaterBill.objects.aggregate(total_owed=Sum("amount_owed"))["total_owed"]
+            or 0
+        )
+
     class Meta:
-        fields = ('total_amount_owed',)
+        fields = ("total_amount_owed",)
