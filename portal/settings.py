@@ -112,9 +112,9 @@ open this db when deploying
 """
 
 
-# render_external_db_url = "postgresql://taona:4IBkxjhj9ZwQPsPPkey8ccSB2EXa6r6V@dpg-cutla99opnds739o9oeg-a.oregon-postgres.render.com/council_portal_65op"
+render_external_db_url = "postgresql://council_portal_0tfz_user:S14sB7cgXyeJwJB3Xy7wHnXk9YxBPrQs@dpg-cvv6jvidbo4c73fgm2rg-a.oregon-postgres.render.com/council_portal_0tfz"
 
-# DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+DATABASES["default"] = dj_database_url.parse(render_external_db_url)
 
 
 # Password validation
