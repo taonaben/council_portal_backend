@@ -27,6 +27,7 @@ class VehicleSerializer(serializers.ModelSerializer):
             "approval_status",
             "city_registered",
             "registered_at",
+            "is_active",  # Add is_active to fields
         )
 
         read_only_fields = (

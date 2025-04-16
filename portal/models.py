@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime, date
 
+from operator import is_
 import random
 import re
 from django.contrib.auth.models import AbstractUser
@@ -195,7 +196,6 @@ class Charges(models.Model):
         super().save(*args, **kwargs)
 
 
-
 class WaterBill(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
@@ -223,7 +223,7 @@ class WaterBill(models.Model):
         related_name="billing_period",
     )
     charges = models.OneToOneField(Charges, on_delete=models.CASCADE, null=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def create_bill_number(self):
@@ -458,7 +458,8 @@ class Vehicle(models.Model):
             ("bus", "bus"),
             ("other", "other"),
         ],
-        null=True,)
+        null=True,
+    )
     tax = models.ForeignKey("Tax", on_delete=models.CASCADE, null=True)
     document = models.FileField(upload_to="vehicle_documents/", null=True, blank=True)
     approval_status = models.CharField(
@@ -470,7 +471,17 @@ class Vehicle(models.Model):
         ],
         default="pending",
     )
+    is_active = models.BooleanField(default=False)
     registered_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Ensures only one vehicle can be active per user at a time."""
+        if self.is_active:
+            # Set all other vehicles of this user to inactive
+            Vehicle.objects.filter(owner=self.owner).exclude(id=self.id).update(
+                is_active=False
+            )
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.plate_number + " - " + self.owner.username
