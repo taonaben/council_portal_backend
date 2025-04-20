@@ -506,9 +506,11 @@ class VehicleApproval(models.Model):
 
 
 class ParkingTicket(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ticket_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    car = models.ForeignKey(
+    vehicle = models.ForeignKey(
         Vehicle, on_delete=models.CASCADE, related_name="parking_tickets"
     )
     city = models.ForeignKey(
@@ -538,6 +540,12 @@ class ParkingTicket(models.Model):
     ]
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="inactive")
+
+    def create_ticket_number(self):
+        while True:
+            ticket_number = f"{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
+            if not ParkingTicket.objects.filter(ticket_number=ticket_number).exists():
+                return ticket_number
 
     def get_issues_time(self):
         return {
@@ -580,6 +588,9 @@ class ParkingTicket(models.Model):
         if self.amount == 0:  # Avoid overwriting manually set amounts
             self.amount = self.get_amount()
 
+        if not self.ticket_number:
+            self.ticket_number = self.create_ticket_number()
+
         self.update_status()  # Update status before saving
 
         super().save(*args, **kwargs)
@@ -615,9 +626,7 @@ class ParkingTicket(models.Model):
             self.save()
 
     def __str__(self):
-        return (
-            f"{self.car.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        return f"{self.vehicle.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 class IssueReport(models.Model):
