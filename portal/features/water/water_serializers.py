@@ -67,7 +67,6 @@ class WaterDebtSerializer(serializers.ModelSerializer):
 
 
 class WaterBillSerializer(serializers.ModelSerializer):
-    account = AccountSerializer(many=False, read_only=True)
     billing_period = BillingDetailsSerializer(many=False)
     water_usage = WaterUsageSerializer(many=False)
     charges = ChargesSerializer(many=False)

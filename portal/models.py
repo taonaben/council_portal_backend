@@ -326,7 +326,7 @@ class WaterBill(models.Model):
         blank=True,
         related_name="water_bills",
     )
-    account = models.OneToOneField(
+    account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE,
         null=True,
@@ -424,6 +424,9 @@ class WaterBill(models.Model):
         self.total_amount = self.calculate_total()
         if not self.bill_number:
             self.bill_number = self.create_bill_number()
+
+        if self.user != self.account.user:
+            raise ValueError("User and account owner must be the same.")
 
         super().save(*args, **kwargs)
 

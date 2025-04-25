@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #004d99;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .info-box {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to City Council Portal</h1>
+    </div>
+    <div class="content">
+        <p>Dear Property Owner,</p>
+        
+        <p>A new property account has been successfully created in our system. Here are your account details:</p>
+        
+        <div class="info-box">
+            <p><strong>Property Address:</strong> {{ property_address }}</p>
+            <p><strong>Account Number:</strong> {{ account_number }}</p>
+            <p><strong>Water Meter Number:</strong> {{ water_meter_number }}</p>
+        </div>
+
+        <p>Please keep this information for your records. You'll need your account number for future reference when:</p>
+        <ul>
+            <li>Making payments</li>
+            <li>Submitting service requests</li>
+            <li>Contacting customer service</li>
+        </ul>
+
+        <p>If you have any questions, please don't hesitate to contact our support team.</p>
+        
+        <p>Best regards,<br>Mutare City Council</p>
+    </div>
+</body>
+</html>

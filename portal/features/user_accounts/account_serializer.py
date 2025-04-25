@@ -17,5 +17,6 @@ class AccountSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "created_at",
-            "updated_at",
+            "account_number",
+            "water_meter_number",
         )
