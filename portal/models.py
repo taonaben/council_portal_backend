@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime, date
 
+import decimal
 from operator import is_
 import random
 import re
@@ -8,6 +9,8 @@ from django.db import models
 import uuid
 import string
 from django.utils import timezone
+from django.core.cache import cache
+from django.db import transaction
 
 review_enums = {
     "pending": "pending",
@@ -53,16 +56,32 @@ class Account(models.Model):
 
     account_number = models.CharField(max_length=20, unique=True)
     user = models.ForeignKey(
-        "User", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
+        "User",
+        on_delete=models.DO_NOTHING,
+        db_index=True,
+        null=True,
+        related_name="accounts",
     )
     property = models.ForeignKey(
         "Property", on_delete=models.DO_NOTHING, null=True, related_name="accounts"
     )
+    water_meter_number = models.CharField(
+        unique=True, max_length=20, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_meter_num(self):
+        values = string.digits
+        num = "".join(random.choice(values) for _ in range(10))
+
+        first_val = self.property.community.name[0]
+        return first_val.upper() + num + "25"
 
     def save(self, *args, **kwargs):
         if not self.account_number:
             self.account_number = self.create_acc_num()
+        if not self.water_meter_number:
+            self.water_meter_number = self.generate_meter_num()
 
         super().save(*args, **kwargs)
 
@@ -71,14 +90,27 @@ class Account(models.Model):
 
 
 class User(AbstractUser):
-
     is_active = models.BooleanField(default=False)
-    # accounts = models.ManyToManyField(
-    #     Account,
-    #     null=True,
-    # )
     phone_number = models.CharField(max_length=15, unique=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+
+    @property
+    def primary_account(self):
+        """Get user's primary account if any"""
+        return self.accounts.first()
+
+    def get_accounts_for_property(self, property_id):
+        """Get all accounts associated with a specific property"""
+        return self.accounts.filter(property_id=property_id)
+
+    @property
+    def primary_account(self):
+        cache_key = f"user_{self.id}_primary_account"
+        account = cache.get(cache_key)
+        if not account:
+            account = self.accounts.first()
+            cache.set(cache_key, account, timeout=3600)
+        return account
 
     def __str__(self):
         return self.username
@@ -144,6 +176,7 @@ class BillingDetails(models.Model):
     due_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        """Override save to set default values for last_receipt_date and due_date."""
         if not self.last_receipt_date:
             previous_period = BillingDetails.objects.order_by("-bill_date").first()
             self.last_receipt_date = (
@@ -156,8 +189,41 @@ class BillingDetails(models.Model):
         super().save(*args, **kwargs)
 
 
+class WaterUsage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    previous_reading = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    current_reading = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
+    consumption = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    date_recorded = models.DateTimeField(auto_now_add=True)
+
+    def calculate_consumption(self):
+        if self.current_reading <= self.previous_reading:
+            raise ValueError("Current reading must be greater than previous reading.")
+        if self.current_reading is not None and self.previous_reading is not None:
+            return self.current_reading - self.previous_reading
+        else:
+            return 0
+
+    def save(self, *args, **kwargs):
+        """Override save to calculate consumption."""
+        if not self.consumption:
+            self.consumption = self.calculate_consumption()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Water Usage: {self.consumption} m³ on {self.date_recorded.strftime('%Y-%m-%d %H:%M:%S')}"
+
+
 class Charges(models.Model):
-    balance_forward = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    rates = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     water_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     sewerage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     street_lighting = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -168,21 +234,45 @@ class Charges(models.Model):
     def get_total_due(self):
         return sum(
             [
-                self.balance_forward,
-                self.water_charges,
-                self.sewerage,
-                self.street_lighting,
-                self.roads_charge,
-                self.education_levy,
+                decimal.Decimal(self.rates),
+                decimal.Decimal(self.water_charges),
+                decimal.Decimal(self.sewerage),
+                decimal.Decimal(self.street_lighting),
+                decimal.Decimal(self.roads_charge),
+                decimal.Decimal(self.education_levy),
             ]
         )
 
+    def calculate_water_charges(self, consumption=0):
+        """Calculate water charges based on usage."""
+        base_rate = decimal.Decimal(4.66 / 6)  # Base rate per cubic meter
+
+        # Example tiered pricing structure
+        if consumption <= 0:
+            return decimal.Decimal("0.00")
+        elif consumption <= 10:  # First 10 cubic meters
+            return decimal.Decimal(consumption) * base_rate
+        elif consumption <= 20:  # 11-20 cubic meters
+            return (decimal.Decimal(10) * base_rate) + (
+                (decimal.Decimal(consumption) - decimal.Decimal("10"))
+                * (base_rate * decimal.Decimal("1.2"))
+            )
+        else:  # Above 20 cubic meters
+            return (
+                (decimal.Decimal(10) * base_rate)
+                + (decimal.Decimal(10) * (base_rate * decimal.Decimal(1.2)))
+                + (
+                    (decimal.Decimal(consumption) - decimal.Decimal(20))
+                    * (base_rate * decimal.Decimal(1.5))
+                )
+            )
+
     @property
-    def check_numbers(self):
+    def all_positive_charges(self):
         return all(
             value > 0
             for value in [
-                self.balance_forward,
+                self.rates,
                 self.water_charges,
                 self.sewerage,
                 self.street_lighting,
@@ -192,14 +282,52 @@ class Charges(models.Model):
         )
 
     def save(self, *args, **kwargs):
+        """Override save to calculate total due."""
+        # Calculate total due
         self.total_due = self.get_total_due()
         super().save(*args, **kwargs)
+
+
+class WaterDebt(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    over_90_days = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
+    )
+    over_60_days = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
+    )
+    over_30_days = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
+    )
+    total_debt = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
+    )
+
+    def calculate_total_debt(self):
+        """Calculate the total debt."""
+        return self.over_90_days + self.over_60_days + self.over_30_days
+
+    def save(self, *args, **kwargs):
+        """Override save to calculate total debt."""
+        if not self.total_debt:
+            self.total_debt = self.calculate_total_debt()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Water Debt: {self.total_debt} on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 class WaterBill(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_bills",
+    )
+    account = models.OneToOneField(
+        Account,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -214,7 +342,6 @@ class WaterBill(models.Model):
         related_name="water_bills",
     )
     bill_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
-    account_number = models.CharField(max_length=20, null=False)  # New field
     billing_period = models.OneToOneField(
         BillingDetails,
         on_delete=models.CASCADE,
@@ -222,69 +349,86 @@ class WaterBill(models.Model):
         blank=True,
         related_name="billing_period",
     )
+    water_usage = models.OneToOneField(
+        WaterUsage,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_usage",
+    )
     charges = models.OneToOneField(Charges, on_delete=models.CASCADE, null=True)
-
+    water_debt = models.OneToOneField(
+        WaterDebt,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="water_debt",
+    )
+    credit = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def create_bill_number(self):
-        while True:
-            bill_number = str(random.randint(100000, 999999))
-            if not WaterBill.objects.filter(bill_number=bill_number).exists():
-                return bill_number
+        return str(uuid.uuid4())[:10].upper()
+
+    def calculate_total(self):
+        """Calculate total bill amount including charges and debt"""
+        charges_total = self.charges.total_due if self.charges else 0
+        debt_total = self.water_debt.total_debt if self.water_debt else 0
+        return charges_total + debt_total - (self.credit or 0)
+
+    def calculate_water_charges(self):
+        """Calculate charges based on water usage and other factors."""
+        if self.water_usage and self.charges:
+            self.charges.water_charges = self.charges.calculate_water_charges(
+                consumption=self.water_usage.consumption
+            )
+            self.charges.total_due = self.charges.get_total_due()
+            self.charges.save()
+
+    @classmethod
+    def create_bill(cls, readings_data, user=None, account=None):
+        """
+        Create a water bill from readings dictionary
+
+        Args:
+            readings_data: dict with previous_reading and current_reading
+            user: User instance
+            account: Account instance
+        """
+        with transaction.atomic():
+            # Create WaterUsage instance first
+            water_usage = WaterUsage.objects.create(
+                previous_reading=readings_data["previous_reading"],
+                current_reading=readings_data["current_reading"],
+            )
+
+            # Create Charges instance
+            charges = Charges.objects.create()
+
+            # Create the bill
+            bill = cls.objects.create(
+                user=user, account=account, water_usage=water_usage, charges=charges
+            )
+
+            # Calculate charges
+            bill.calculate_water_charges()
+            bill.total_amount = bill.calculate_total()
+            bill.save()
+
+            return bill
 
     def save(self, *args, **kwargs):
+        self.total_amount = self.calculate_total()
         if not self.bill_number:
             self.bill_number = self.create_bill_number()
-
-        # Check if account exists by account number
-        if not Account.objects.filter(account_number=self.account_number).exists():
-            raise ValueError("Account with this account number does not exist.")
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Bill #{self.bill_number} - {self.city.name if self.city else 'N/A'}"
-
-
-class WaterMeter(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    meter_num = models.CharField(unique=True, max_length=20)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    current_reading = models.FloatField(default=0.0)
-
-    def __str__(self):
-        return str(self.meter_num) + " - " + self.property.address
-
-    def generate_meter_num(self):
-        values = string.digits
-        num = "".join(random.choice(values) for _ in range(10))
-
-        first_val = self.property.community.name[0]
-        return first_val.upper() + num + "25"
-
-    def save(self, *args, **kwargs):
-        if not self.meter_num:
-            self.meter_num = self.generate_meter_num()
-        super().save(*args, **kwargs)
-
-    def update_reading(self, new_reading):
-        if new_reading != self.current_reading:
-            WaterUsage.objects.create(
-                meter=self,
-                property=self.property,
-                consumption=new_reading - self.current_reading,
-                date_recorded=timezone.now(),
-            )
-            self.current_reading = new_reading
-            self.save()
-
-
-class WaterUsage(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    meter = models.ForeignKey(WaterMeter, on_delete=models.CASCADE)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    consumption = models.FloatField()
-    date_recorded = models.DateTimeField()
 
 
 class Business(models.Model):

@@ -112,9 +112,9 @@ open this db when deploying
 """
 
 
-render_external_db_url = "postgresql://council_portal_0tfz_user:S14sB7cgXyeJwJB3Xy7wHnXk9YxBPrQs@dpg-cvv6jvidbo4c73fgm2rg-a.oregon-postgres.render.com/council_portal_0tfz"
+# render_external_db_url = "postgresql://council_portal_0tfz_user:S14sB7cgXyeJwJB3Xy7wHnXk9YxBPrQs@dpg-cvv6jvidbo4c73fgm2rg-a.oregon-postgres.render.com/council_portal_0tfz"
 
-DATABASES["default"] = dj_database_url.parse(render_external_db_url)
+# DATABASES["default"] = dj_database_url.parse(render_external_db_url)
 
 
 # Password validation
@@ -263,3 +263,26 @@ TODO uncomment to use real email backend
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
+
+
+# LOGGING = {
+#     'version': 1,
+#     'filters': {
+#         'require_debug_true': {
+#             '()': 'django.utils.log.RequireDebugTrue',
+#         }
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'filters': ['require_debug_true'],
+#             'class': 'logging.StreamHandler',
+#         }
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         }
+#     }
+# }

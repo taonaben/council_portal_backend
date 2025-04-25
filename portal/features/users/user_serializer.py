@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from portal.features.user_accounts.account_serializer import AccountSerializer
 from portal.models import User, Account
-from portal.features.water.water_serializers import Account
 
 
 class UserSerializer(serializers.ModelSerializer):
