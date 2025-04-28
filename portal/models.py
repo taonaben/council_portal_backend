@@ -191,16 +191,9 @@ class BillingDetails(models.Model):
 
 class WaterUsage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    previous_reading = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    current_reading = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-
-    consumption = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    previous_reading = models.FloatField(null=True, blank=True)
+    current_reading = models.FloatField(null=True, blank=True)
+    consumption = models.FloatField(null=True, blank=True)
     date_recorded = models.DateTimeField(auto_now_add=True)
 
     def calculate_consumption(self):
@@ -222,49 +215,41 @@ class WaterUsage(models.Model):
 
 
 class Charges(models.Model):
-
-    rates = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    water_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    sewerage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    street_lighting = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    roads_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    education_levy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    total_due = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    rates = models.FloatField(default=0.00)
+    water_charges = models.FloatField(default=0.00)
+    sewerage = models.FloatField(default=0.00)
+    street_lighting = models.FloatField(default=0.00)
+    roads_charge = models.FloatField(default=0.00)
+    education_levy = models.FloatField(default=0.00)
+    total_due = models.FloatField(default=0.00)
 
     def get_total_due(self):
         return sum(
             [
-                decimal.Decimal(self.rates),
-                decimal.Decimal(self.water_charges),
-                decimal.Decimal(self.sewerage),
-                decimal.Decimal(self.street_lighting),
-                decimal.Decimal(self.roads_charge),
-                decimal.Decimal(self.education_levy),
+                self.rates,
+                self.water_charges,
+                self.sewerage,
+                self.street_lighting,
+                self.roads_charge,
+                self.education_levy,
             ]
         )
 
     def calculate_water_charges(self, consumption=0):
         """Calculate water charges based on usage."""
-        base_rate = decimal.Decimal(4.66 / 6)  # Base rate per cubic meter
+        base_rate = 4.66 / 6  # Base rate per cubic meter
 
-        # Example tiered pricing structure
         if consumption <= 0:
-            return decimal.Decimal("0.00")
+            return 0.00
         elif consumption <= 10:  # First 10 cubic meters
-            return decimal.Decimal(consumption) * base_rate
+            return consumption * base_rate
         elif consumption <= 20:  # 11-20 cubic meters
-            return (decimal.Decimal(10) * base_rate) + (
-                (decimal.Decimal(consumption) - decimal.Decimal("10"))
-                * (base_rate * decimal.Decimal("1.2"))
-            )
+            return (10 * base_rate) + ((consumption - 10) * (base_rate * 1.2))
         else:  # Above 20 cubic meters
             return (
-                (decimal.Decimal(10) * base_rate)
-                + (decimal.Decimal(10) * (base_rate * decimal.Decimal(1.2)))
-                + (
-                    (decimal.Decimal(consumption) - decimal.Decimal(20))
-                    * (base_rate * decimal.Decimal(1.5))
-                )
+                (10 * base_rate)
+                + (10 * (base_rate * 1.2))
+                + ((consumption - 20) * (base_rate * 1.5))
             )
 
     @property
@@ -283,25 +268,16 @@ class Charges(models.Model):
 
     def save(self, *args, **kwargs):
         """Override save to calculate total due."""
-        # Calculate total due
         self.total_due = self.get_total_due()
         super().save(*args, **kwargs)
 
 
 class WaterDebt(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    over_90_days = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
-    )
-    over_60_days = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
-    )
-    over_30_days = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
-    )
-    total_debt = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
-    )
+    over_90_days = models.FloatField(null=True, blank=True, default=0.00)
+    over_60_days = models.FloatField(null=True, blank=True, default=0.00)
+    over_30_days = models.FloatField(null=True, blank=True, default=0.00)
+    total_debt = models.FloatField(null=True, blank=True, default=0.00)
 
     def calculate_total_debt(self):
         """Calculate the total debt."""
@@ -333,7 +309,6 @@ class WaterBill(models.Model):
         blank=True,
         related_name="water_bills",
     )
-
     city = models.ForeignKey(
         City,
         on_delete=models.CASCADE,
@@ -364,11 +339,9 @@ class WaterBill(models.Model):
         blank=True,
         related_name="water_debt",
     )
-    credit = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True, default=0.00
-    )
+    credit = models.FloatField(null=True, blank=True, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_amount = models.FloatField(default=0.00)
 
     def create_bill_number(self):
         return str(uuid.uuid4())[:10].upper()
@@ -399,21 +372,17 @@ class WaterBill(models.Model):
             account: Account instance
         """
         with transaction.atomic():
-            # Create WaterUsage instance first
             water_usage = WaterUsage.objects.create(
                 previous_reading=readings_data["previous_reading"],
                 current_reading=readings_data["current_reading"],
             )
 
-            # Create Charges instance
             charges = Charges.objects.create()
 
-            # Create the bill
             bill = cls.objects.create(
                 user=user, account=account, water_usage=water_usage, charges=charges
             )
 
-            # Calculate charges
             bill.calculate_water_charges()
             bill.total_amount = bill.calculate_total()
             bill.save()
