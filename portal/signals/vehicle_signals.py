@@ -19,3 +19,4 @@ def approve_vehicle_review(sender, instance, created, **kwargs):
     if not created and instance.vehicle.approval_status != instance.review_status:
         instance.vehicle.approval_status = instance.review_status
         instance.vehicle.save(update_fields=["approval_status"])
+

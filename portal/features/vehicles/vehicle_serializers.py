@@ -19,12 +19,15 @@ class VehicleSerializer(serializers.ModelSerializer):
             "brand",
             "model",
             "color",
+            "image",
+            "vehicle_type",
             "tax",
             "parking_tickets",
             "ticket_count",
             "approval_status",
             "city_registered",
             "registered_at",
+            "is_active",  # Add is_active to fields
         )
 
         read_only_fields = (
@@ -33,8 +36,8 @@ class VehicleSerializer(serializers.ModelSerializer):
             "parking_tickets",
             "registered_at",
             "approval_status",
-            'city_registered',
-            'owner',
+            "city_registered",
+            "owner",
         )
 
         extra_kwargs = {
@@ -69,4 +72,3 @@ class VehicleApprovalSerializer(serializers.ModelSerializer):
             "review_status": {"required": True},
             "rejection_reason": {"required": False},
         }
-

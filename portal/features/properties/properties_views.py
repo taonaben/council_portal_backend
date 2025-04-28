@@ -5,11 +5,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework import generics
+from rest_framework import pagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
 class properties_list(generics.ListCreateAPIView):
     serializer_class = PropertySerializer
+    pagination_class = pagination.PageNumberPagination
+    # pagination_class.page_size = 10
+    pagination_class.page_size_query_param = "page_size"
+    max_page_size = 100
 
     def get_permissions(self):
         if self.request.method == "POST":

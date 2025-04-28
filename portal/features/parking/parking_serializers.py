@@ -15,8 +15,9 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
         model = ParkingTicket
         fields = (
             "id",
+            "ticket_number",
             "user",
-            "car",
+            "vehicle",
             "city",
             "issued_length",
             "issued_at",
@@ -32,6 +33,7 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             "id",
+            "ticket_number",
             "user",
             "issued_at",
             "expiry_at",

@@ -6,4 +6,4 @@ class BaseConfig(AppConfig):
     name = "portal"
 
     def ready(self):
-        import portal.signals
+        from portal import signals
