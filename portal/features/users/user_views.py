@@ -9,16 +9,12 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 class user_list(generics.ListCreateAPIView):
     serializer_class = UserSerializer
-    
-    
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            self.permission_classes = [IsAdminUser]
-        return super().get_permissions()
-
+ 
     def get_queryset(self):
-        return User.objects.filter(city=self.request.user.city)  # filter by admin city
+        if self.request.user.is_staff:
+            return User.objects.filter(city=self.request.user.city)
+        else:
+            return User.objects.filter(id=self.request.user.id)
 
     def perform_create(self, serializer):
         serializer.save(is_active=False)

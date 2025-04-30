@@ -9,18 +9,20 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
 class AccountView(generics.ListCreateAPIView):
-    permission_classes = [IsAdminUser]
     serializer_class = AccountSerializer
 
     def get_queryset(self):
-        return Account.objects.filter(user__city=self.request.user.city)
+        if self.request.user.is_staff:
+            return Account.objects.filter(user__city=self.request.user.city)
+        else:
+            return Account.objects.filter(user=self.request.user)
 
 
 class AccountDetail(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AccountSerializer
     queryset = Account.objects.all()
-    lookup_url_kwarg = "account_id"
+    lookup_url_kwarg = "account_number"
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

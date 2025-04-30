@@ -1,11 +1,10 @@
 from rest_framework import serializers
 from portal.features.user_accounts.account_serializer import AccountSerializer
-from portal.models import User, Account
+from portal.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
 
-    accounts = AccountSerializer(many=True, read_only=False)
 
     class Meta:
         model = User
@@ -29,6 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "is_staff",
             "is_superuser",
+            "accounts",
             "is_active",
             "properties",
         )
