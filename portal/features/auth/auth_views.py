@@ -82,9 +82,10 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
             return Response(
                 {
+                    "user": user.id,
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
-                    "user": user.id,
+                    "message": "Login successful",
                 },
                 status=200,
             )

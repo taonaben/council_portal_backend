@@ -14,6 +14,7 @@ from datetime import timedelta
 import dj_database_url
 from pathlib import Path
 import os
+from corsheaders.defaults import default_headers, default_methods
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "django_celery_beat",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "silk.middleware.SilkyMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = "portal.urls"
@@ -259,6 +263,20 @@ TODO uncomment to use real email backend
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'munikwataona09@gmail.com'
 # EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="fallback-email-password")
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",  # Vue or Flutter web
+]
+
+# Optional but helpful:
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "content-type",
+    "accept",
+]
+CORS_ALLOW_METHODS = list(default_methods) + ["POST", "OPTIONS"]
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
