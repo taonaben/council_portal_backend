@@ -10,6 +10,8 @@ class CitySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "sections",
+            "latitude",
+            "longitude",
         )
 
         read_only_fields = ("id", "sections")

@@ -13,14 +13,15 @@ class AccountView(generics.ListCreateAPIView):
     serializer_class = AccountSerializer
 
     def get_queryset(self):
-        return Account.objects.filter(user__city=self.request.user.city)
+        # return Account.objects.filter(user__city=self.request.user.city)
+        return Account.objects.all()
 
 
 class AccountDetail(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AccountSerializer
     queryset = Account.objects.all()
-    lookup_url_kwarg = "account_id"
+    lookup_url_kwarg = "account_number"
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

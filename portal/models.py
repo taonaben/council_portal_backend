@@ -22,6 +22,12 @@ review_enums = {
 class City(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True)
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True, default=0.0
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True, default=0.0
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
