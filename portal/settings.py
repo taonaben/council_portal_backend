@@ -60,6 +60,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -69,8 +71,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "silk.middleware.SilkyMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = "portal.urls"
@@ -269,6 +269,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React
     "http://127.0.0.1:3000",
     "http://localhost:8080",  # Vue or Flutter web
+    "https://council-portal.onrender.com",
 ]
 
 # Optional but helpful:
@@ -277,6 +278,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "accept",
 ]
 CORS_ALLOW_METHODS = list(default_methods) + ["POST", "OPTIONS"]
+CORS_ALLOW_ALL_ORIGINS = True  # Or use CORS_ALLOWED_ORIGINS with exact domains
+CORS_ALLOW_CREDENTIALS = True
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
