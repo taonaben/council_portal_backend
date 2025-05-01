@@ -1,4 +1,3 @@
-from re import A
 from portal.models import City, CitySection
 from portal.features.city.city_serializers import CitySerializer, CitySectionSerializer
 from rest_framework import viewsets
@@ -13,8 +12,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 class cities_list(generics.ListCreateAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         if self.request.user.is_superuser:
