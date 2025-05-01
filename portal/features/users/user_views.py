@@ -1,3 +1,4 @@
+import re
 from portal.models import User
 from portal.features.users.user_serializer import UserSerializer
 from rest_framework.response import Response
@@ -16,6 +17,10 @@ class user_list(generics.ListCreateAPIView):
     #         return User.objects.filter(city=self.request.user.city)
     #     else:
     #         return User.objects.filter(id=self.request.user.id)
+
+
+    def get_queryset(self):
+        return User.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(is_active=False)
