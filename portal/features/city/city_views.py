@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 class cities_list(generics.ListCreateAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         if self.request.user.is_superuser:
@@ -25,7 +25,7 @@ class city_detail(generics.RetrieveUpdateDestroyAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
     lookup_url_kwarg = "city_id"
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def delete(self, request, *args, **kwargs):
         if request.user.is_superuser:
