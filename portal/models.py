@@ -644,24 +644,22 @@ class ParkingTicket(models.Model):
     amount = models.FloatField(null=False, default=0)
 
     ISSUED_LENGTH_CHOICES = [
-        ("30min", "30 Minutes"),
+        # ("30min", "30 Minutes"),
         ("1hr", "1 Hour"),
         ("2hr", "2 Hours"),
         ("3hr", "3 Hours"),
     ]
 
     issued_length = models.CharField(
-        max_length=10, choices=ISSUED_LENGTH_CHOICES, default="30min"
+        max_length=10, choices=ISSUED_LENGTH_CHOICES, default="1hr"
     )
 
     STATUS_CHOICES = [
         ("active", "Active"),
-        ("inactive", "Inactive"),
-        ("used", "Used"),
         ("expired", "Expired"),
     ]
 
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="inactive")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
 
     def create_ticket_number(self):
         while True:
@@ -671,18 +669,18 @@ class ParkingTicket(models.Model):
 
     def get_issues_time(self):
         return {
-            "30min": 30,
+            # "30min": 30,
             "1hr": 60,
             "2hr": 120,
             "3hr": 180,
-        }.get(self.issued_length, 30)
+        }.get(self.issued_length, 60)
 
     def get_amount(self):
         return {
-            "30min": 1,
-            "1hr": 2,
-            "2hr": 4,
-            "3hr": 6,
+            # "30min": 1,
+            "1hr": 1,
+            "2hr": 2,
+            "3hr": 3,
         }.get(self.issued_length, 1)
 
     def update_status(self):
@@ -690,14 +688,6 @@ class ParkingTicket(models.Model):
         now = timezone.now()
         if self.expiry_at and now >= self.expiry_at:
             self.status = "expired"
-
-    def activate_ticket(self):
-        """Activates the ticket by setting the status to 'active' and calculates expiry."""
-        if self.status == "inactive":
-            self.status = "active"
-            self.time_in = timezone.now()
-            self.expiry_at = self.time_in + timedelta(minutes=self.get_issues_time())
-            self.save()
 
     def save(self, *args, **kwargs):
         """Ensures correct values are set before saving."""
@@ -726,14 +716,14 @@ class ParkingTicket(models.Model):
             raise ValueError("Cannot extend an expired ticket.")
 
         extra_minutes = {
-            "30min": 30,
+            # "30min": 30,
             "1hr": 60,
             "2hr": 120,
             "3hr": 180,
         }.get(additional_time, 0)
 
         extra_amount = {
-            "30min": 1,
+            # "30min": 1,
             "1hr": 2,
             "2hr": 4,
             "3hr": 6,
