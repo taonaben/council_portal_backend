@@ -166,7 +166,7 @@ class Property(models.Model):
     housing_status = models.CharField(
         max_length=50, choices=[("owned", "owned"), ("rented", "rented")]
     )
-    tax = models.ForeignKey("Tax", on_delete=models.CASCADE)
+    tax = models.ForeignKey("Tax", on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

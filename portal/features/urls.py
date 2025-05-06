@@ -27,7 +27,7 @@ urlpatterns = [
     path("cities/", include(city_urls)),
     path("business/", include(business_urls)),
     path("issues/", include(issue_urls)),
-    path("parking/", include(parking_urls)),
+    path("parking_tickets/", include(parking_urls)),
     path("pet_licensing/", include(pet_licensing_urls)),
     path("properties/", include(property_urls)),
     path("taxes/", include(tax_urls)),

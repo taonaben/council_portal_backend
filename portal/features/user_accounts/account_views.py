@@ -13,7 +13,7 @@ class AccountView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Account.objects.filter(user__city=self.request.user.city)
+            return Account.objects.all()
         else:
             return Account.objects.filter(user=self.request.user)
 

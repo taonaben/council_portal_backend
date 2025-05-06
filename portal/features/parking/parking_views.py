@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework import pagination 
+from rest_framework import pagination
 
 # from portal.features.vehicles.vehicle_filters import VehicleReviewFilter, VehicleFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -149,3 +149,22 @@ class ParkingDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete()
+
+
+class VehicleParkingTicketList(generics.ListCreateAPIView):
+
+    serializer_class = ParkingTicketSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = pagination.PageNumberPagination
+    # pagination_class.page_size = 2
+    pagination_class.page_size_query_param = "page_size"
+    max_page_size = 100
+    lookup_url_kwarg = "vehicle_id"
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return ParkingTicket.objects.filter(
+                user=user, vehicle__id=self.kwargs["vehicle_id"]
+            )
+        return ParkingTicket.objects.none()
