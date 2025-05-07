@@ -4,6 +4,7 @@ import decimal
 from operator import is_
 import random
 import re
+from click import DateTime
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
@@ -628,7 +629,6 @@ class VehicleApproval(models.Model):
 
 
 class ParkingTicket(models.Model):
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ticket_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -639,20 +639,9 @@ class ParkingTicket(models.Model):
         City, on_delete=models.DO_NOTHING, related_name="parking_tickets", null=True
     )
     issued_at = models.DateTimeField(auto_now_add=True)
-    time_in = models.TimeField(null=True, blank=True)
-    expiry_at = models.DateTimeField(null=True, blank=True)
+    minutes_issued = models.IntegerField(null=False, default=0)
+    expiry_at = models.DateTimeField(null=True, blank=True, editable=False)
     amount = models.FloatField(null=False, default=0)
-
-    ISSUED_LENGTH_CHOICES = [
-        # ("30min", "30 Minutes"),
-        ("1hr", "1 Hour"),
-        ("2hr", "2 Hours"),
-        ("3hr", "3 Hours"),
-    ]
-
-    issued_length = models.CharField(
-        max_length=10, choices=ISSUED_LENGTH_CHOICES, default="1hr"
-    )
 
     STATUS_CHOICES = [
         ("active", "Active"),
@@ -662,83 +651,78 @@ class ParkingTicket(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
 
     def create_ticket_number(self):
+        """Generate a unique ticket number."""
         while True:
             ticket_number = f"{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
             if not ParkingTicket.objects.filter(ticket_number=ticket_number).exists():
                 return ticket_number
 
-    def get_issues_time(self):
-        return {
-            # "30min": 30,
-            "1hr": 60,
-            "2hr": 120,
-            "3hr": 180,
-        }.get(self.issued_length, 60)
+    def calculate_expiry(self):
+        """Calculate the expiry time based on issued_at and minutes_issued."""
+   
 
-    def get_amount(self):
-        return {
-            # "30min": 1,
-            "1hr": 1,
-            "2hr": 2,
-            "3hr": 3,
-        }.get(self.issued_length, 1)
+        if self.issued_at is None:
+            raise ValueError("issued_at cannot be None when calculating expiry.")
+        return self.issued_at + timedelta(minutes=self.minutes_issued)
+
+    def calculate_amount(self):
+        """Calculate the amount based on minutes issued."""
+        return self.minutes_issued / 60  # $1 for every 60 minutes
 
     def update_status(self):
-        """Automatically updates the status based on expiry time."""
+        """Automatically update the status based on expiry time."""
         now = timezone.now()
         if self.expiry_at and now >= self.expiry_at:
             self.status = "expired"
 
     def save(self, *args, **kwargs):
-        """Ensures correct values are set before saving."""
-        if not self.expiry_at:  # Ensure expiry is only set once
-            if self.issued_at:
-                self.expiry_at = self.time_in + timedelta(
-                    minutes=self.get_issues_time()
-                )
-
-        if self.amount == 0:  # Avoid overwriting manually set amounts
-            self.amount = self.get_amount()
+        if self.issued_at is None:
+             self.issued_at = timezone.now()
+    
+        """Ensure correct values are set before saving."""
+        if not self.expiry_at:  # Set expiry only if not already set
+            self.expiry_at = self.calculate_expiry()
 
         if not self.ticket_number:
             self.ticket_number = self.create_ticket_number()
 
+        self.amount = self.calculate_amount()  # Calculate amount before saving
+
         self.update_status()  # Update status before saving
+
+        # Ensure only one active ticket per user
+        if self.status == "active":
+            ParkingTicket.objects.filter(user=self.user, status="active").exclude(id=self.id).update(status="expired")
 
         super().save(*args, **kwargs)
 
-    def extend_ticket(self, additional_time):
-        """
-        Allows the user to extend their parking ticket.
-        `additional_time` should be one of ['30min', '1hr', '2hr', '3hr'].
-        """
-        if self.status == "expired":
-            raise ValueError("Cannot extend an expired ticket.")
-
-        extra_minutes = {
-            # "30min": 30,
-            "1hr": 60,
-            "2hr": 120,
-            "3hr": 180,
-        }.get(additional_time, 0)
-
-        extra_amount = {
-            # "30min": 1,
-            "1hr": 2,
-            "2hr": 4,
-            "3hr": 6,
-        }.get(additional_time, 0)
-
-        if extra_minutes > 0:
-            if self.expiry_at:
-                self.expiry_at += timedelta(minutes=extra_minutes)  # Extend expiry time
-            else:
-                self.expiry_at = self.issued_at + timedelta(minutes=extra_minutes)
-            self.amount += extra_amount  # Add cost
-            self.save()
-
     def __str__(self):
         return f"{self.vehicle.plate_number} - {self.issued_at.strftime('%Y-%m-%d %H:%M:%S')}"
+
+
+class ParkingTicketBundle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ticket_bundles")
+    purchased_at = models.DateTimeField(auto_now_add=True)
+    quantity = models.PositiveIntegerField(default=0)  # number of prepaid tickets
+    ticket_minutes = models.PositiveIntegerField(default=60)  # each ticket's value
+    price_paid = models.FloatField(default=0.0)  # total price with discount
+    tickets_redeemed = models.PositiveIntegerField(default=0)
+
+    def has_available_tickets(self):
+        return self.tickets_redeemed < self.quantity
+
+    def redeem_ticket(self):
+        if not self.has_available_tickets():
+            raise Exception("No more prepaid tickets available")
+        self.tickets_redeemed += 1
+        self.save()
+
+    def remaining_tickets(self):
+        return self.quantity - self.tickets_redeemed
+
+    def __str__(self):
+        return f"{self.user.username} - {self.remaining_tickets()} remaining"
 
 
 class IssueReport(models.Model):
