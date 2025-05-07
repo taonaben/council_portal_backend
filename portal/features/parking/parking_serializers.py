@@ -1,15 +1,12 @@
 from calendar import weekday
 from datetime import timedelta, timezone, datetime
-from portal.models import ParkingTicket
+from portal.models import ParkingTicket, ParkingTicketBundle, City, Vehicle
 from rest_framework import serializers
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.utils import timezone
 
 
 class ParkingTicketSerializer(serializers.ModelSerializer):
-    extend_time = serializers.ChoiceField(
-        choices=["30min", "1hr", "2hr", "3hr"], required=False, write_only=True
-    )
 
     class Meta:
         model = ParkingTicket
@@ -19,17 +16,12 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
             "user",
             "vehicle",
             "city",
-            "issued_length",
             "issued_at",
+            "minutes_issued",
             "expiry_at",
             "amount",
             "status",
-            "extend_time",
         )
-
-        extra_kwargs = {
-            "extend_time": {"required": False, "write_only": True},
-        }
 
         read_only_fields = (
             "id",
@@ -42,39 +34,13 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
             "city",
         )
 
-    def validate_issued_length(self, value):
-        """Ensure the issued_length is a valid choice."""
-        if value not in ["30min", "1hr", "2hr", "3hr"]:
-            raise serializers.ValidationError("Invalid issued length choice.")
-        return value
-
     def create(self, validated_data):
-        validated_data.pop("extend_time", None)  # Remove extend_time before saving
 
         request = self.context.get("request")
         if request and request.user:
             validated_data["user"] = request.user
 
         return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        """Allow extending the ticket if `extend_time` is provided."""
-        extend_time = validated_data.pop("extend_time", None)
-        activate_ticket = validated_data.pop("activate_ticket", None)
-
-        if extend_time:
-            if instance.status == "expired":
-                raise serializers.ValidationError("Cannot extend an expired ticket.")
-            instance.extend_ticket(extend_time)  # Calls the model method
-
-        if activate_ticket:
-            instance.activate_ticket()  # Calls the model method
-        # Update other fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
 
 
 class ParkingSummariesSerializer(serializers.Serializer):
@@ -143,6 +109,69 @@ class WeeklyIncomeSerializer(serializers.ModelSerializer):
         return data
 
 
-# get the daily hourly revenue
+# serializers.py
+class TicketBundlePurchaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParkingTicketBundle
+        fields = ["id", "quantity", "ticket_minutes", "price_paid"]
 
-# get total daily ticket count
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return ParkingTicketBundle.objects.create(user=user, **validated_data)
+
+
+class RedeemTicketSerializer(serializers.Serializer):
+    vehicle_id = serializers.UUIDField()
+    city_id = serializers.UUIDField()
+
+    def validate(self, data):
+        user = self.context["request"].user
+        bundle = (
+            ParkingTicketBundle.objects.filter(
+                user=user, quantity__gt=F("tickets_redeemed")
+            )
+            .order_by("purchased_at")
+            .first()
+        )
+
+        if not bundle:
+            raise serializers.ValidationError("No available ticket bundles to redeem.")
+
+        data["bundle"] = bundle
+        return data
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        vehicle_id = validated_data["vehicle_id"]
+        city_id = validated_data["city_id"]
+        bundle = validated_data["bundle"]
+
+        vehicle = Vehicle.objects.get(id=vehicle_id)
+        city = City.objects.get(id=city_id)
+
+        bundle.redeem_ticket()
+
+        ticket = ParkingTicket.objects.create(
+            user=user, vehicle=vehicle, city=city, minutes_issued=bundle.ticket_minutes
+        )
+
+        return ticket
+
+
+class TicketBundleDetailSerializer(serializers.ModelSerializer):
+    remaining_tickets = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ParkingTicketBundle
+        fields = [
+            "id",
+            "purchased_at",
+            "quantity",
+            "tickets_redeemed",
+            "ticket_minutes",
+            "price_paid",
+            "remaining_tickets",
+        ]
+
+    def get_remaining_tickets(self, obj) -> int:
+        return obj.remaining_tickets()

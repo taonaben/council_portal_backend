@@ -1,11 +1,14 @@
 from math import perm
 
 from yaml import serialize
-from portal.models import ParkingTicket
+from portal.models import ParkingTicket, ParkingTicketBundle
 from portal.features.parking.parking_serializers import (
     ParkingTicketSerializer,
     ParkingSummariesSerializer,
     WeeklyIncomeSerializer,
+    TicketBundleDetailSerializer,
+    RedeemTicketSerializer,
+    TicketBundlePurchaseSerializer,
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -168,3 +171,21 @@ class VehicleParkingTicketList(generics.ListCreateAPIView):
                 user=user, vehicle__id=self.kwargs["vehicle_id"]
             )
         return ParkingTicket.objects.none()
+
+
+class TicketBundlePurchaseView(generics.CreateAPIView):
+    serializer_class = TicketBundlePurchaseSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class RedeemTicketView(generics.CreateAPIView):
+    serializer_class = RedeemTicketSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class TicketBundleListView(generics.ListAPIView):
+    serializer_class = TicketBundleDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ParkingTicketBundle.objects.filter(user=self.request.user)

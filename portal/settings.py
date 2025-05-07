@@ -31,8 +31,8 @@ SECRET_KEY = config("SECRET_KEY", default="fallback-secret-key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-APPEND_SLASH=False
+DEBUG = True
+APPEND_SLASH = False
 
 ALLOWED_HOSTS = [
     "council-portal.onrender.com",
