@@ -4,6 +4,7 @@ from portal.features.water.water_serializers import WaterBillSerializer
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
@@ -39,9 +40,11 @@ class water_bill_list_by_account(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        account_id = self.request.query_params.get("account_id")
+        account_id = self.kwargs.get(
+            "account_id"
+        )  # Retrieve account_id from path parameters
         if not account_id:
-            return WaterBill.objects.none()
+            raise ValidationError({"detail": "Account ID is required."})
 
         base_queryset = WaterBill.objects.select_related(
             "user",
@@ -56,9 +59,9 @@ class water_bill_list_by_account(generics.ListAPIView):
         )
 
         if self.request.user.is_staff:
-            return base_queryset.filter(city=self.request.user.city, account_id=account_id)
+            return base_queryset.filter(city=self.request.user.city, account=account_id)
 
-        return base_queryset.filter(user=self.request.user, account_id=account_id)
+        return base_queryset.filter(user=self.request.user, account=account_id)
 
 
 class water_bill_detail(generics.RetrieveUpdateDestroyAPIView):
