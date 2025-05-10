@@ -13,8 +13,8 @@ urlpatterns = [
         name="water_bill",
     ),
     path(
-        "latest_water_bill/",
-        views.latest_water_bill.as_view(),
+        "latest_water_bill/<int:account_id>/",
+        views.LatestWaterBillView.as_view(),
         name="latest_water_bill",
     ),
 ]

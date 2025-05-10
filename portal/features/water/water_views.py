@@ -81,14 +81,22 @@ class water_bill_detail(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class latest_water_bill(generics.RetrieveAPIView):
+class LatestWaterBillView(generics.RetrieveAPIView):
     serializer_class = WaterBillSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # Retrieve the latest water bill for the authenticated user
+        account_id = self.kwargs.get("account_id")
         return (
-            WaterBill.objects.filter(user=self.request.user)
+            WaterBill.objects.filter(user=self.request.user, account=account_id)
+            .select_related(
+                "account",
+                "city",
+                "billing_period",
+                "water_usage",
+                "charges",
+                "water_debt",
+            )
             .order_by("-created_at")
             .first()
         )
