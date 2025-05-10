@@ -1,7 +1,6 @@
 from os import read
 import re
 from rest_framework import serializers
-from portal.features.user_accounts.account_serializer import AccountSerializer
 from portal.models import WaterBill, WaterUsage, BillingDetails, Charges, WaterDebt
 
 
