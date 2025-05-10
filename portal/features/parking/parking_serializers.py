@@ -123,19 +123,36 @@ class TicketBundlePurchaseSerializer(serializers.ModelSerializer):
 class RedeemTicketSerializer(serializers.Serializer):
     vehicle_id = serializers.UUIDField()
     city_id = serializers.UUIDField()
+    bundle_id = serializers.UUIDField(required=False)
 
     def validate(self, data):
         user = self.context["request"].user
-        bundle = (
-            ParkingTicketBundle.objects.filter(
-                user=user, quantity__gt=F("tickets_redeemed")
-            )
-            .order_by("purchased_at")
-            .first()
-        )
+        bundle_id = data.get("bundle_id")
 
-        if not bundle:
-            raise serializers.ValidationError("No available ticket bundles to redeem.")
+        if bundle_id:
+            # Validate specific bundle
+            try:
+                bundle = ParkingTicketBundle.objects.get(
+                    id=bundle_id, user=user, quantity__gt=F("tickets_redeemed")
+                )
+            except ParkingTicketBundle.DoesNotExist:
+                raise serializers.ValidationError(
+                    "The specified bundle is invalid or has no tickets left."
+                )
+        else:
+            # Get the first available bundle with unredeemed tickets
+            bundle = (
+                ParkingTicketBundle.objects.filter(
+                    user=user, quantity__gt=F("tickets_redeemed")
+                )
+                .order_by("purchased_at")
+                .first()
+            )
+            # If no such bundle exists, return None
+            if not bundle:
+                raise serializers.ValidationError(
+                    "No available ticket bundles with unredeemed tickets."
+                )
 
         data["bundle"] = bundle
         return data

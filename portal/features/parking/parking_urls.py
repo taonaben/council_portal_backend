@@ -24,6 +24,11 @@ urlpatterns = [
     ),
     path("<uuid:ticket_id>/", views.ParkingDetail.as_view(), name="parking_detail"),
     path(
+        "active-ticket/",
+        views.ActiveParkingTicketsView.as_view(),
+        name="active-parking-tickets",
+    ),
+    path(
         "vehicle/<str:vehicle_id>/",
         views.VehicleParkingTicketList.as_view(),
         name="parking_list_by_vehicle",
