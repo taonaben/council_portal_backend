@@ -76,6 +76,17 @@ class ParkingList(generics.ListCreateAPIView):
             ticket.extend_ticket(extend_time)
             ticket.save()
 
+class ActiveParkingTicketsView(APIView):
+    """
+    View to retrieve only active parking tickets for the authenticated user.
+    """
+    serializer_class = ParkingTicketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return ParkingTicket.objects.filter(user=user, status="active")
+
 
 class ParkingSummary(APIView):
     permission_classes = [IsAdminUser]
