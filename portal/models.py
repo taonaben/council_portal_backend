@@ -364,6 +364,7 @@ class WaterBill(models.Model):
 
     def get_remaining_balance(self):
         """Calculate the remaining balance after payment."""
+
         return max(self.total_amount - self.amount_paid, 0)
 
     def update_payment_status(self):
@@ -372,8 +373,10 @@ class WaterBill(models.Model):
             self.payment_status = "pending"
         elif self.remaining_balance == 0:
             self.payment_status = "paid"
-        else:
+        elif self.billing_period and timezone.now() > self.billing_period.due_date:
             self.payment_status = "overdue"
+        else:
+            self.payment_status = "pending"
 
     def create_bill_number(self):
         return str(uuid.uuid4())[:10].upper()

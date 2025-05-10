@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
 
-class water_bill_list(generics.ListCreateAPIView):
+class water_bill_list_all(generics.ListAPIView):
     serializer_class = WaterBillSerializer
     permission_classes = [IsAuthenticated]
 
@@ -31,10 +31,34 @@ class water_bill_list(generics.ListCreateAPIView):
         if self.request.user.is_staff:
             return base_queryset.filter(city=self.request.user.city)
 
-        return base_queryset.filter(property__owner=self.request.user)
+        return base_queryset.filter(user=self.request.user)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user, city=self.request.user.city)
+
+class water_bill_list_by_account(generics.ListAPIView):
+    serializer_class = WaterBillSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        account_id = self.request.query_params.get("account_id")
+        if not account_id:
+            return WaterBill.objects.none()
+
+        base_queryset = WaterBill.objects.select_related(
+            "user",
+            "account",
+            "city",
+            "billing_period",
+            "water_usage",
+            "charges",
+            "water_debt",
+        ).prefetch_related(
+            "account__property",
+        )
+
+        if self.request.user.is_staff:
+            return base_queryset.filter(city=self.request.user.city, account_id=account_id)
+
+        return base_queryset.filter(user=self.request.user, account_id=account_id)
 
 
 class water_bill_detail(generics.RetrieveUpdateDestroyAPIView):
