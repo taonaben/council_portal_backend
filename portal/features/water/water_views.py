@@ -56,6 +56,12 @@ class water_bill_detail(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = WaterBillSerializer(instance, data=request.data)
         if serializer.is_valid():
+            amount_paid = request.data.get("amount_paid", 0)
+            if amount_paid:
+                instance.amount_paid += float(amount_paid)
+                instance.remaining_balance = instance.get_remaining_balance()
+                instance.update_payment_status()
+                instance.save()
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -64,6 +70,12 @@ class water_bill_detail(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = WaterBillSerializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
+            amount_paid = request.data.get("amount_paid", 0)
+            if amount_paid:
+                instance.amount_paid += float(amount_paid)
+                instance.remaining_balance = instance.get_remaining_balance()
+                instance.update_payment_status()
+                instance.save()
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

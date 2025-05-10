@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, date
 
 import decimal
+from math import remainder
 from operator import is_
 import random
 import re
@@ -349,12 +350,36 @@ class WaterBill(models.Model):
     credit = models.FloatField(null=True, blank=True, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.FloatField(default=0.00)
+    amount_paid = models.FloatField(default=0.00)
+    remaining_balance = models.FloatField(default=0.00)
+    payment_status = models.CharField(
+        max_length=50,
+        choices=[
+            ("pending", "pending"),
+            ("paid", "paid"),
+            ("overdue", "overdue"),
+        ],
+        default="pending",
+    )
+
+    def get_remaining_balance(self):
+        """Calculate the remaining balance after payment."""
+        return max(self.total_amount - self.amount_paid, 0)
+
+    def update_payment_status(self):
+        """Determine the payment status based on the remaining balance."""
+        if self.remaining_balance > 0:
+            self.payment_status = "pending"
+        elif self.remaining_balance == 0:
+            self.payment_status = "paid"
+        else:
+            self.payment_status = "overdue"
 
     def create_bill_number(self):
         return str(uuid.uuid4())[:10].upper()
 
     def calculate_total(self):
-        """Calculate total bill amount including charges and debt"""
+        """Calculate total bill amount including charges and debt."""
         charges_total = self.charges.total_due if self.charges else 0
         debt_total = self.water_debt.total_debt if self.water_debt else 0
         return charges_total + debt_total - (self.credit or 0)
@@ -371,7 +396,7 @@ class WaterBill(models.Model):
     @classmethod
     def create_bill(cls, readings_data, user=None, account=None):
         """
-        Create a water bill from readings dictionary
+        Create a water bill from readings dictionary.
 
         Args:
             readings_data: dict with previous_reading and current_reading
@@ -392,12 +417,17 @@ class WaterBill(models.Model):
 
             bill.calculate_water_charges()
             bill.total_amount = bill.calculate_total()
+            bill.remaining_balance = bill.get_remaining_balance()
+            bill.update_payment_status()
             bill.save()
 
             return bill
 
     def save(self, *args, **kwargs):
         self.total_amount = self.calculate_total()
+        self.remaining_balance = self.get_remaining_balance()
+        self.update_payment_status()
+
         if not self.bill_number:
             self.bill_number = self.create_bill_number()
 
@@ -408,7 +438,6 @@ class WaterBill(models.Model):
 
     def __str__(self):
         return f"Bill #{self.bill_number} - {self.city.name if self.city else 'N/A'}"
-
 
 class Business(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

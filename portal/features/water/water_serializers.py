@@ -1,4 +1,5 @@
 from os import read
+import re
 from rest_framework import serializers
 from portal.features.user_accounts.account_serializer import AccountSerializer
 from portal.models import WaterBill, WaterUsage, BillingDetails, Charges, WaterDebt
@@ -86,6 +87,9 @@ class WaterBillSerializer(serializers.ModelSerializer):
             "water_debt",
             "billing_period",
             "total_amount",
+            "amount_paid",
+            "remaining_balance",
+            "payment_status",
             "created_at",
         )
         read_only_fields = (
@@ -93,6 +97,8 @@ class WaterBillSerializer(serializers.ModelSerializer):
             "user",
             "city",
             "total_amount",
+            "remaining_balance",
+            "payment_status",
             "bill_number",
             "created_at",
         )
