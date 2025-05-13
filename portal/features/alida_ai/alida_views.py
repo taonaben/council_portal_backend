@@ -19,7 +19,14 @@ from portal.features.alida_ai.alida_serializers import (
     ChatMessageSerializer,
     ChatResponseSerializer,
 )
-from portal.models import WaterBill, ParkingTicket, ChatSession, ChatMessage
+from portal.models import (
+    Account,
+    Vehicle,
+    WaterBill,
+    ParkingTicket,
+    ChatSession,
+    ChatMessage,
+)
 
 
 # Configure logging
@@ -35,9 +42,6 @@ except ImportError:
 
 
 redis = get_redis_connection("default")
-# Initialize Redis connection
-key = "chatbot:session"
-redis_client = get_redis_connection("default")
 # Initialize Redis connection
 
 
@@ -98,7 +102,6 @@ class ChatbotAPIView(APIView):
             )
 
             # Cache both user and ai messages in Redis
-            redis = get_redis_connection("default")
             key = f"chat:{user.id}"
             # Prepare messages for Redis (serialize with serializer)
             user_msg_data = ChatMessageSerializer(user_msg_obj).data
@@ -179,6 +182,41 @@ class ChatbotAPIView(APIView):
                 }
                 context["parking_tickets"].append(ticket_data)
 
+        vehicles = Vehicle.objects.filter(owner=user).order_by("-registered_at")[:5]
+        if vehicles.exists():
+            context["vehicles"] = []
+            for vehicle in vehicles:
+                vehicle_data = {
+                    "license_plate": vehicle.plate_number,
+                    "make": vehicle.brand,
+                    "model": vehicle.model,
+                    "vehicle_type": vehicle.vehicle_type,
+                    "color": vehicle.color,
+                    "approval_status": vehicle.approval_status,
+                    "is_active": vehicle.is_active,
+                    "registered_at": (
+                        vehicle.registered_at.strftime("%Y-%m-%d")
+                        if vehicle.registered_at
+                        else None
+                    ),
+                }
+                context["vehicles"].append(vehicle_data)
+
+        accounts = Account.objects.filter(user=user).order_by("-created_at")[:5]
+        if accounts.exists():
+            context["accounts"] = []
+            for account in accounts:
+                account_data = {
+                    "account_number": account.account_number,
+                    "water_meter_number": account.water_meter_number,
+                    "created_at": (
+                        account.created_at.strftime("%Y-%m-%d")
+                        if account.created_at
+                        else None
+                    ),
+                }
+                context["accounts"].append(account_data)
+
         return context
 
     def _generate_system_message(self, context_data):
@@ -190,7 +228,20 @@ class ChatbotAPIView(APIView):
             "You help users by providing information about their water bills and parking tickets. "
             "Be concise, helpful, and only respond to queries related to the user's data. "
             "If asked about something outside the provided context, politely explain that "
-            "you can only assist with information about their water bills and parking tickets."
+            "you can only assist with information about their water bills, vehicles, accounts and parking tickets."
+            "Offer suggestions for how they can find more information if needed."
+            "You can also provide information about the user's vehicles and accounts."
+            "If the user asks about their water bill, provide details about the most recent bill, including "
+            "the billing period, due date, total amount, amount paid, remaining balance, and payment status. "
+            "If the user asks about their parking tickets, provide details about the most recent tickets, including "
+            "the ticket number, ticket date, amount, and status. "
+            "If the user asks about their vehicles, provide details about the most recent vehicles, including "
+            "the license plate, make, model, vehicle type, color, approval status, is_active status, "
+            "registered_at date, and city registered. "
+            "If the user asks about their accounts, provide details about the most recent accounts, including "
+            "the account number, property, water meter number, and created_at date."
+            "Try to explain in simple terms and avoid technical jargon. "
+            "Try to be as helpful as possible, but do not provide any information outside of the user's data."
         )
 
         # Add context data to the system message
@@ -280,6 +331,7 @@ class GetChatHistory(APIView):
                     {
                         "sender": msg.get("sender"),
                         "content": msg.get("content"),
+                        "created_at": msg.get("created_at"),
                     }
                 )
             return Response(formatted, status=status.HTTP_200_OK)
@@ -299,7 +351,11 @@ class GetChatHistory(APIView):
         redis.ltrim(key, 0, 9)
         # Return in chronological order, only sender/content
         formatted = [
-            {"sender": msg["sender"], "content": msg["content"]}
+            {
+                "sender": msg["sender"],
+                "content": msg["content"],
+                "created_at": msg["created_at"],
+            }
             for msg in reversed(serializer.data)
         ]
         return Response(formatted, status=status.HTTP_200_OK)

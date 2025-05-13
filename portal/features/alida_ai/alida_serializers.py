@@ -14,6 +14,11 @@ class ChatMessageSerializer(serializers.Serializer):
     content = serializers.CharField(
         required=True, help_text="User's message to the AI assistant"
     )
+    created_at = serializers.DateTimeField(
+        help_text="Timestamp of the message",
+        read_only=True,
+        format="%Y-%m-%dT%H:%M:%S.%fZ",  # ISO 8601 format
+    )
 
 
 class ChatResponseSerializer(serializers.Serializer):
