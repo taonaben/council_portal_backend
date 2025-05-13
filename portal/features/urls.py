@@ -19,10 +19,12 @@ from portal.features.water.water_urls import urlpatterns as water_urls
 from media.media_control.media_urls import urlpatterns as media_urls
 from portal.features.auth.auth_urls import urlpatterns as auth_urls
 from portal.features.user_accounts.account_urls import urlpatterns as account_urls
+from portal.features.alida_ai.alida_urls import urlpatterns as alida_urls
 
 
 urlpatterns = [
     path("announcements/", include(announcement_urls)),
+    path("alida_ai/", include(alida_urls)),
     path("auth/", include(auth_urls)),
     path("cities/", include(city_urls)),
     path("business/", include(business_urls)),
