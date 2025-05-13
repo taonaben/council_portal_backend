@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django_redis import get_redis_connection
 from portal.features.alida_ai.alida_serializers import ChatMessageSerializer
 import json
+from django.core.cache import cache
 
 
 """
@@ -23,7 +24,7 @@ def invalidate_alida_ai_signals(sender, instance, **kwargs):
     )[:10]
     serializer = ChatMessageSerializer(chat_messages, many=True)
     # Clear and repopulate Redis list
-    redis.delete(key)
+    cache.delete(key)
     # Repopulate Redis with latest 10 messages in chronological order (oldest first)
     for msg in reversed(serializer.data):  # chronological order
         redis.lpush(key, json.dumps(msg))
