@@ -1,10 +1,13 @@
 import random
 from datetime import datetime, timedelta
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.db import models
 from django.dispatch import receiver
 from django.utils import timezone
 from portal.models import WaterUsage, WaterBill
+from django_redis import get_redis_connection
+from portal.features.water.water_serializers import WaterBillSerializer
+import json
 
 
 # @receiver(post_save, sender=WaterUsage)
@@ -69,3 +72,13 @@ def change_water_bill_status():
         bill.status = "paid"
 
     bill.save()
+
+
+@receiver([post_save, post_delete], sender=WaterBill)
+def invalidate_water_bill_cache(sender, instance, **kwargs):
+    user_id = instance.user.id
+    redis = get_redis_connection("default")
+    key = f"water_bills:{user_id}"
+    bills = WaterBill.objects.filter(user=instance.user).order_by("-created_at")[:10]
+    serializer = WaterBillSerializer(bills, many=True)
+    redis.set(key, json.dumps(serializer.data), ex=60 * 15)

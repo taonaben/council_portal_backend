@@ -40,6 +40,10 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
         if request and request.user:
             validated_data["user"] = request.user
 
+        # Remove read-only fields from validated_data
+        for field in self.Meta.read_only_fields:
+            validated_data.pop(field, None)
+
         return super().create(validated_data)
 
 

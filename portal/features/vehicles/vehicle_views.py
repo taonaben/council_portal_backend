@@ -10,6 +10,23 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from portal.features.vehicles.vehicle_filters import VehicleReviewFilter, VehicleFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from django_redis import get_redis_connection
+
+import json
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
+from django.core.cache import cache
+
+
+def _convert_uuids_to_str(data):
+    if isinstance(data, dict):
+        return {k: _convert_uuids_to_str(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [_convert_uuids_to_str(i) for i in data]
+    elif hasattr(data, "hex") and hasattr(data, "int"):
+        # Likely a UUID
+        return str(data)
+    return data
 
 
 class VehicleList(generics.ListCreateAPIView):
@@ -27,11 +44,27 @@ class VehicleList(generics.ListCreateAPIView):
         "plate_number",
     ]
 
-    def get_query_set(self):
-        if self.request.user.is_staff:
-            return Vehicle.objects.filter(city_registered=self.request.user.city)
-        else:
-            return Vehicle.objects.filter(owner=self.request.user)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Vehicle.objects.filter(city_registered=user.city)
+        return Vehicle.objects.filter(owner=user)
+
+    @method_decorator(cache_control(private=True, max_age=60 * 15))
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        cache_key = f"vehicles:{user.id}"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(json.loads(cached_data))
+
+        queryset = self.get_queryset().order_by("-registered_at")[:5]
+        serializer = self.get_serializer(queryset, many=True)
+        data = _convert_uuids_to_str(serializer.data)
+
+        cache.set(cache_key, json.dumps(data), timeout=60 * 15)
+        return Response(data)
 
     def get_permissions(self):
         if self.request.method == "POST":
@@ -60,9 +93,7 @@ class VehicleDetail(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = VehicleSerializer(instance, data=request.data)
         if serializer.is_valid():
-            serializer.save(
-            
-            )
+            serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -77,7 +108,7 @@ class VehicleDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class VehicleReviewList(generics.ListAPIView):
     serializer_class = VehicleApprovalSerializer
-    filterset_class = VehicleReviewFilter  
+    filterset_class = VehicleReviewFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,

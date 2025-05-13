@@ -1,9 +1,12 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.db import transaction
 from portal.models import Property, Account
+from django_redis import get_redis_connection
+from portal.features.user_accounts.account_serializer import AccountSerializer
+import json
 import logging
 
 
@@ -59,3 +62,13 @@ def create_account_for_property(sender, instance, created, **kwargs):
         logger.warning(
             f"No owner associated with property {instance.id}. Account not created."
         )
+
+
+@receiver([post_save, post_delete], sender=Account)
+def invalidate_account_cache(sender, instance, **kwargs):
+    user_id = instance.user.id
+    redis = get_redis_connection("default")
+    key = f"accounts:{user_id}"
+    accounts = Account.objects.filter(user=instance.user).order_by("-created_at")[:10]
+    serializer = AccountSerializer(accounts, many=True)
+    redis.set(key, json.dumps(serializer.data), ex=60 * 15)

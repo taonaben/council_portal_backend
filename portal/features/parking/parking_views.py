@@ -1,3 +1,4 @@
+from calendar import c
 from math import perm
 
 from yaml import serialize
@@ -16,6 +17,11 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import pagination
+from django_redis import get_redis_connection
+import json
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
+from django.core.cache import cache
 
 # from portal.features.vehicles.vehicle_filters import VehicleReviewFilter, VehicleFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,62 +30,66 @@ from django.utils.timezone import now
 from django.db.models import Sum
 from datetime import timedelta
 
-"""
-    PERMISSIONS
 
-    for admin:
-        delete ticket
-        view all user tickets in city
-        view summaries of paid tickets(daily income, monthly income, number of tickets paid)
-
-    for user:
-        add ticket
-        edit ticket(add more time)
-        view personal tickets of all their cars
-
-
-
-    
-"""
+class CustomPagination(pagination.PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class ParkingList(generics.ListCreateAPIView):
-    """
-    Handles:
-    - Listing user-specific tickets (for normal users)
-    - Listing all tickets in a city (for admins)
-    - Creating new tickets (for authenticated users)
-    """
-
     serializer_class = ParkingTicketSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = pagination.PageNumberPagination
-    # pagination_class.page_size = 2
-    pagination_class.page_size_query_param = "page_size"
-    max_page_size = 100
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, city=request.user.city)
+
+        response = super().create(request, *args, **kwargs)
+        user = request.user
+        cache.delete_pattern(
+            f"parking_tickets:{user.id}*"
+        )  # delete all paginated pages
+        return response
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated:
-            if user.is_staff:  # Admins see all tickets in their city
-                return ParkingTicket.objects.filter(city=user.city)
-            return ParkingTicket.objects.filter(
-                user=user
-            )  # Users see only their tickets
-        return ParkingTicket.objects.none()
+        if user.is_staff:
+            return ParkingTicket.objects.filter(city=user.city)
+        return ParkingTicket.objects.filter(user=user)
 
-    def perform_create(self, serializer):
-        extend_time = self.request.data.get("extend_time")
-        ticket = serializer.save(user=self.request.user, city=self.request.user.city)
+    @method_decorator(cache_control(private=True, max_age=60 * 15))
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        page_number = request.query_params.get("page", 1)
+        page_size = request.query_params.get(
+            "page_size", self.pagination_class.page_size
+        )
+        cache_key = f"parking_tickets:{user.id}:page{page_number}:size{page_size}"
+        cached_data = cache.get(cache_key)
 
-        if extend_time:
-            ticket.extend_ticket(extend_time)
-            ticket.save()
+        if cached_data:
+            return Response(cached_data)
+
+        queryset = self.get_queryset().order_by("-issued_at")
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+            cache.set(cache_key, response.data, timeout=60 * 15)
+            return response
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class ActiveParkingTicketsView(APIView):
     """
     View to retrieve only active parking tickets for the authenticated user.
     """
+
     serializer_class = ParkingTicketSerializer
     permission_classes = [IsAuthenticated]
 
@@ -193,10 +203,57 @@ class RedeemTicketView(generics.CreateAPIView):
     serializer_class = RedeemTicketSerializer
     permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        user = request.user
+
+        # Ensure the user is authenticated
+        if not user or not user.is_authenticated:
+            return Response({"error": "User not authenticated"}, status=401)
+
+        # Handle pagination parameters with a fallback
+        page_number = request.query_params.get("page", 1)
+        page_size = request.query_params.get(
+            "page_size", getattr(self.pagination_class, "page_size", 10)
+        )
+
+        # Construct the cache key
+        cache_key = f"ticket_bundles:{user.id}:page{page_number}:size{page_size}"
+
+        # Delete the cache key
+        cache.delete(cache_key)
+
+        # Return a success response
+        return Response({"message": "Cache cleared successfully"}, status=200)
+
 
 class TicketBundleListView(generics.ListAPIView):
     serializer_class = TicketBundleDetailSerializer
+
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return ParkingTicketBundle.objects.filter(user=self.request.user)
+
+    @method_decorator(cache_control(private=True, max_age=60 * 15))
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        page_number = request.query_params.get("page", 1)
+        page_size = request.query_params.get(
+            "page_size", self.pagination_class.page_size
+        )
+        cache_key = f"ticket_bundles:{user.id}:page{page_number}:size{page_size}"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)
+
+        queryset = self.get_queryset().order_by("-created_at")
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+            cache.set(cache_key, response.data, timeout=60 * 15)
+            return response
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

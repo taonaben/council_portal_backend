@@ -3,13 +3,18 @@ from portal.features.water import water_views as views
 
 urlpatterns = [
     path(
+        "add_water_bill/",
+        views.CreateWaterBillView.as_view(),
+        name="create_water_bill",
+    ),
+    path(
         "water_bill_list/",
-        views.water_bill_list_all.as_view(),
+        views.WaterBillListAll.as_view(),
         name="water_bill_list",
     ),
     path(
         "water_bill_list_by_account/<int:account_id>/",
-        views.water_bill_list_by_account.as_view(),
+        views.WaterBillListByAccount.as_view(),
         name="water_bill_list_all",
     ),
     path(
