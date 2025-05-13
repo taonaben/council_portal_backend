@@ -13,6 +13,7 @@ import string
 from django.utils import timezone
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
 
 review_enums = {
     "pending": "pending",
@@ -442,6 +443,7 @@ class WaterBill(models.Model):
     def __str__(self):
         return f"Bill #{self.bill_number} - {self.city.name if self.city else 'N/A'}"
 
+
 class Business(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -691,7 +693,6 @@ class ParkingTicket(models.Model):
 
     def calculate_expiry(self):
         """Calculate the expiry time based on issued_at and minutes_issued."""
-   
 
         if self.issued_at is None:
             raise ValueError("issued_at cannot be None when calculating expiry.")
@@ -709,8 +710,8 @@ class ParkingTicket(models.Model):
 
     def save(self, *args, **kwargs):
         if self.issued_at is None:
-             self.issued_at = timezone.now()
-    
+            self.issued_at = timezone.now()
+
         """Ensure correct values are set before saving."""
         if not self.expiry_at:  # Set expiry only if not already set
             self.expiry_at = self.calculate_expiry()
@@ -724,7 +725,9 @@ class ParkingTicket(models.Model):
 
         # Ensure only one active ticket per user
         if self.status == "active":
-            ParkingTicket.objects.filter(user=self.user, status="active").exclude(id=self.id).update(status="expired")
+            ParkingTicket.objects.filter(user=self.user, status="active").exclude(
+                id=self.id
+            ).update(status="expired")
 
         super().save(*args, **kwargs)
 
@@ -734,7 +737,9 @@ class ParkingTicket(models.Model):
 
 class ParkingTicketBundle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ticket_bundles")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ticket_bundles"
+    )
     purchased_at = models.DateTimeField(auto_now_add=True)
     quantity = models.PositiveIntegerField(default=0)  # number of prepaid tickets
     ticket_minutes = models.PositiveIntegerField(default=60)  # each ticket's value
@@ -956,6 +961,24 @@ class TaxExemption(models.Model):
 
     def __str__(self):
         return self.taxpayer.user.username + " - " + self.tax.name
+
+
+class ChatSession(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    started_at = models.DateTimeField(auto_now_add=True)
+
+
+class ChatMessage(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        ChatSession, on_delete=models.CASCADE, related_name="messages"
+    )
+    sender = models.CharField(max_length=10, choices=[("user", "User"), ("ai", "AI")])
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Image(models.Model):

@@ -11,10 +11,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from datetime import timedelta
+from venv import logger
 import dj_database_url
 from pathlib import Path
+import environ
 import os
 from corsheaders.defaults import default_headers, default_methods
+from decouple import config
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,10 +29,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-from decouple import config
 
-SECRET_KEY = config("SECRET_KEY", default="fallback-secret-key")
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+SECRET_KEY = env("SECRET_KEY")
+
+# Modify how OPENAI_API_KEY is accessed to handle missing values
+OPENAI_API_KEY = env("OPENAI_API_KEY", default=None)
+if OPENAI_API_KEY is None:
+    # You can log a warning here if needed
+    pass
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -100,14 +111,20 @@ WSGI_APPLICATION = "portal.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 # from portal.sensitive_stuff.database_config_settings import *
 
+DB_NAME = env("db_name", default="council_portal")
+DB_USER = env("db_user", default="postgres")
+DB_PASSWORD = env("db_password", default="")
+DB_HOST = env("db_host", default="localhost")
+DB_PORT = env("db_port", default="5432")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "council_portal",
-        "USER": "postgres",
-        "PASSWORD": "!Projectbaby1809",
-        "HOST": "localhost",
-        "PORT": 5432,
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
     }
 }
 
@@ -118,7 +135,8 @@ open this db when deploying
 """
 
 
-render_external_db_url = "postgresql://council_portal_0tfz_user:S14sB7cgXyeJwJB3Xy7wHnXk9YxBPrQs@dpg-cvv6jvidbo4c73fgm2rg-a.oregon-postgres.render.com/council_portal_0tfz"
+render_external_db_url = os.environ.get("RENDER_DB_URL")
+logger.info(f"Render external db url: {render_external_db_url}")
 
 DATABASES["default"] = dj_database_url.parse(render_external_db_url)
 
@@ -286,6 +304,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "TIMEOUT": 60 * 60 * 24,  # Cache timeout in seconds (1 day)
+        },
+    },
+}
 
 
 # LOGGING = {
