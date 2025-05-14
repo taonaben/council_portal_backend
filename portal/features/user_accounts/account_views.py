@@ -29,7 +29,7 @@ class AccountView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Account.objects.all(property__city=user.city)
+            return Account.objects.filter(property__city=user.city)
         return Account.objects.filter(user=user)
 
     def create(self, request, *args, **kwargs):
