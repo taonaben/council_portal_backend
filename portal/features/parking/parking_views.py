@@ -247,7 +247,7 @@ class TicketBundleListView(generics.ListAPIView):
         if cached_data:
             return Response(cached_data)
 
-        queryset = self.get_queryset().order_by("-created_at")
+        queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

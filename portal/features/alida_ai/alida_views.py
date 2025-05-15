@@ -108,7 +108,12 @@ class ChatbotAPIView(APIView):
             ai_msg_data = ChatMessageSerializer(ai_msg_obj).data
             redis.lpush(key, json.dumps(ai_msg_data))
             redis.lpush(key, json.dumps(user_msg_data))
-            redis.ltrim(key, 0, 9)  # Keep last 10 messages
+            redis.ltrim(key, 0, 59)  # Keep only the last 60 messages
+            # Set expiration for the Redis key
+            redis.expire(key, 60 * 15)  # Set expiration to 15 minutes
+            # Save the chat session to the database
+
+            # session.save()
 
             # Format and return response
             response_data = {"response": response_content, "created_at": timezone.now()}
