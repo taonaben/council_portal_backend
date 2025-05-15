@@ -32,10 +32,13 @@ class AccountView(generics.ListCreateAPIView):
             return Account.objects.filter(property__city=user.city)
         return Account.objects.filter(user=user)
 
-    def create(self, request, *args, **kwargs):
+    def perform_create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         user = request.user
         cache.delete(f"accounts:{user.id}")
+
+        
+
         return response
 
     @method_decorator(cache_control(private=True, max_age=60 * 15))
