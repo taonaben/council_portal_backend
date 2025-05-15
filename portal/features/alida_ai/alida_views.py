@@ -101,16 +101,20 @@ class ChatbotAPIView(APIView):
                 content=response_content,
             )
 
-            # Cache both user and ai messages in Redis
+            # Cache both user and ai messages in Redis only if not already present
             key = f"chat:{user.id}"
-            # Prepare messages for Redis (serialize with serializer)
             user_msg_data = ChatMessageSerializer(user_msg_obj).data
             ai_msg_data = ChatMessageSerializer(ai_msg_obj).data
-            redis.lpush(key, json.dumps(ai_msg_data))
-            redis.lpush(key, json.dumps(user_msg_data))
-            redis.ltrim(key, 0, 59)  # Keep only the last 60 messages
-            # Set expiration for the Redis key
-            redis.expire(key, 60 * 15)  # Set expiration to 15 minutes
+
+            # Prevent duplicates by checking the latest message in Redis
+            last_msgs = redis.lrange(key, 0, 1)
+            last_contents = [json.loads(m).get("content") for m in last_msgs]
+            if user_msg_data["content"] not in last_contents:
+                redis.lpush(key, json.dumps(user_msg_data))
+            if ai_msg_data["content"] not in last_contents:
+                redis.lpush(key, json.dumps(ai_msg_data))
+            redis.ltrim(key, 0, 59)
+            redis.expire(key, 60 * 15)
             # Save the chat session to the database
 
             # session.save()
@@ -328,17 +332,22 @@ class GetChatHistory(APIView):
         if redis_msgs:
             # Redis returns newest first, reverse for chronological order
             messages = [json.loads(m) for m in reversed(redis_msgs)]
-            # Ensure sender and content are present and formatted via serializer
-            formatted = []
+            # Remove duplicates by (sender, content, created_at)
+            seen = set()
+            unique_msgs = []
             for msg in messages:
-                # Defensive: only keep sender/content fields
-                formatted.append(
-                    {
-                        "sender": msg.get("sender"),
-                        "content": msg.get("content"),
-                        "created_at": msg.get("created_at"),
-                    }
-                )
+                msg_id = (msg.get("sender"), msg.get("content"), msg.get("created_at"))
+                if msg_id not in seen:
+                    seen.add(msg_id)
+                    unique_msgs.append(msg)
+            formatted = [
+                {
+                    "sender": msg.get("sender"),
+                    "content": msg.get("content"),
+                    "created_at": msg.get("created_at"),
+                }
+                for msg in unique_msgs
+            ]
             return Response(formatted, status=status.HTTP_200_OK)
 
         # Fallback to DB if Redis empty
@@ -350,11 +359,11 @@ class GetChatHistory(APIView):
             "-created_at"
         )[:10]
         serializer = ChatMessageSerializer(chat_messages, many=True)
-        # Also cache these messages in Redis for next time
-        for msg in serializer.data:
-            redis.lpush(key, json.dumps(msg))
-        redis.ltrim(key, 0, 9)
-        # Return in chronological order, only sender/content
+        # Only cache if Redis is empty
+        if not redis.lrange(key, 0, -1):
+            for msg in serializer.data:
+                redis.lpush(key, json.dumps(msg))
+            redis.ltrim(key, 0, 9)
         formatted = [
             {
                 "sender": msg["sender"],
