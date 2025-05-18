@@ -15,13 +15,4 @@ def update_ticket_status(sender, instance, created, **kwargs):
         instance.save(update_fields=["status"])
 
 
-@receiver([post_save, post_delete], sender=ParkingTicket)
-def invalidate_parking_ticket_cache(sender, instance, **kwargs):
-    user_id = instance.user.id
-    redis = get_redis_connection("default")
-    key = f"parking_tickets:{user_id}"
-    tickets = ParkingTicket.objects.filter(user=instance.user).order_by("-issued_at")[
-        :10
-    ]
-    serializer = ParkingTicketSerializer(tickets, many=True)
-    redis.set(key, json.dumps(serializer.data), ex=60 * 15)
+

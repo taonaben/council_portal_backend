@@ -1,10 +1,10 @@
+from functools import partial
 from rest_framework import serializers
 from portal.features.user_accounts.account_serializer import AccountSerializer
 from portal.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-
 
     class Meta:
         model = User
@@ -32,6 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "properties",
         )
+
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -61,5 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)
 
+        
         instance.save()
         return instance

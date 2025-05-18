@@ -7,7 +7,6 @@ from django.utils import timezone
 
 
 class ParkingTicketSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ParkingTicket
         fields = (
@@ -22,7 +21,6 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
             "amount",
             "status",
         )
-
         read_only_fields = (
             "id",
             "ticket_number",
@@ -35,16 +33,14 @@ class ParkingTicketSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-
         request = self.context.get("request")
-        if request and request.user:
-            validated_data["user"] = request.user
+        user = request.user
+        city = getattr(user, "city", None)  # only works if user has `city`
 
-        # Remove read-only fields from validated_data
-        for field in self.Meta.read_only_fields:
-            validated_data.pop(field, None)
+        if not city:
+            raise serializers.ValidationError("User has no city associated.")
 
-        return super().create(validated_data)
+        return ParkingTicket.objects.create(user=user, city=city, **validated_data)
 
 
 class ParkingSummariesSerializer(serializers.Serializer):
