@@ -693,7 +693,6 @@ class ParkingTicket(models.Model):
 
     def calculate_expiry(self):
         """Calculate the expiry time based on issued_at and minutes_issued."""
-
         if self.issued_at is None:
             raise ValueError("issued_at cannot be None when calculating expiry.")
         return self.issued_at + timedelta(minutes=self.minutes_issued)
@@ -712,7 +711,12 @@ class ParkingTicket(models.Model):
         if self.issued_at is None:
             self.issued_at = timezone.now()
 
-        """Ensure correct values are set before saving."""
+        # Ensure only one active ticket per user
+        if self.status == "active":
+            ParkingTicket.objects.filter(user=self.user, status="active").exclude(
+                id=self.id
+            ).update(status="expired")
+
         if not self.expiry_at:  # Set expiry only if not already set
             self.expiry_at = self.calculate_expiry()
 
@@ -722,12 +726,6 @@ class ParkingTicket(models.Model):
         self.amount = self.calculate_amount()  # Calculate amount before saving
 
         self.update_status()  # Update status before saving
-
-        # Ensure only one active ticket per user
-        if self.status == "active":
-            ParkingTicket.objects.filter(user=self.user, status="active").exclude(
-                id=self.id
-            ).update(status="expired")
 
         super().save(*args, **kwargs)
 

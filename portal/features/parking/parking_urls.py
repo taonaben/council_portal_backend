@@ -2,6 +2,7 @@ from django.urls import path
 import portal.features.parking.parking_views as views
 
 urlpatterns = [
+    path("add/", views.CreateTicketView.as_view(), name="create_parking_ticket"),
     path("all/", views.ParkingList.as_view(), name="parking_list"),
     # path("summary/", views.ParkingSummary.as_view(), name="parking_summary"),
     # path(
