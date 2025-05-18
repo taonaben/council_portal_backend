@@ -64,11 +64,11 @@ def create_account_for_property(sender, instance, created, **kwargs):
         )
 
 
-@receiver([post_save, post_delete], sender=Account)
-def invalidate_account_cache(sender, instance, **kwargs):
-    user_id = instance.user.id
-    redis = get_redis_connection("default")
-    key = f"accounts:{user_id}"
-    accounts = Account.objects.filter(user=instance.user).order_by("-created_at")[:10]
-    serializer = AccountSerializer(accounts, many=True)
-    redis.set(key, json.dumps(serializer.data), ex=60 * 15)
+# @receiver([post_save, post_delete], sender=Account)
+# def invalidate_account_cache(sender, instance, **kwargs):
+#     user_id = instance.user.id
+#     redis = get_redis_connection("default")
+#     key = f"accounts:{user_id}"
+#     accounts = Account.objects.filter(user=instance.user).order_by("-created_at")[:10]
+#     serializer = AccountSerializer(accounts, many=True)
+#     redis.set(key, json.dumps(serializer.data), ex=60 * 15)

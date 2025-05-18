@@ -74,11 +74,11 @@ def change_water_bill_status():
     bill.save()
 
 
-@receiver([post_save, post_delete], sender=WaterBill)
-def invalidate_water_bill_cache(sender, instance, **kwargs):
-    user_id = instance.user.id
-    redis = get_redis_connection("default")
-    key = f"water_bills:{user_id}"
-    bills = WaterBill.objects.filter(user=instance.user).order_by("-created_at")[:10]
-    serializer = WaterBillSerializer(bills, many=True)
-    redis.set(key, json.dumps(serializer.data), ex=60 * 15)
+# @receiver([post_save, post_delete], sender=WaterBill)
+# def invalidate_water_bill_cache(sender, instance, **kwargs):
+#     user_id = instance.user.id
+#     redis = get_redis_connection("default")
+#     key = f"water_bills:{user_id}"
+#     bills = WaterBill.objects.filter(user=instance.user).order_by("-created_at")[:10]
+#     serializer = WaterBillSerializer(bills, many=True)
+#     redis.set(key, json.dumps(serializer.data), ex=60 * 15)
