@@ -24,16 +24,16 @@ def create_vehicle_review(sender, instance, created, **kwargs):
     redis.set(key, json.dumps(serializer.data), ex=60 * 15)
 
 
-@receiver(post_delete, sender=Vehicle)
-def invalidate_vehicle_cache_on_delete(sender, instance, **kwargs):
-    user_id = instance.owner.id
-    redis = get_redis_connection("default")
-    key = f"vehicles:{user_id}"
-    vehicles = Vehicle.objects.filter(owner=instance.owner).order_by("-registered_at")[
-        :10
-    ]
-    serializer = VehicleSerializer(vehicles, many=True)
-    redis.set(key, json.dumps(serializer.data), ex=60 * 15)
+# @receiver(post_delete, sender=Vehicle)
+# def invalidate_vehicle_cache_on_delete(sender, instance, **kwargs):
+#     user_id = instance.owner.id
+#     redis = get_redis_connection("default")
+#     key = f"vehicles:{user_id}"
+#     vehicles = Vehicle.objects.filter(owner=instance.owner).order_by("-registered_at")[
+#         :10
+#     ]
+#     serializer = VehicleSerializer(vehicles, many=True)
+#     redis.set(key, json.dumps(serializer.data), ex=60 * 15)
 
 
 @receiver(post_save, sender=VehicleApproval)
