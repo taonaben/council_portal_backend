@@ -16,7 +16,7 @@ Council Portal Backend is a robust backend service designed to power council or 
 - Admin dashboard support
 - Audit logs and activity tracking
 
-## Screenshots / Demo
+## Demo
 
 [API Documentation](https://council-portal.onrender.com/api/schema/swagger-ui/)
 
