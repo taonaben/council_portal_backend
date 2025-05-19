@@ -7,14 +7,52 @@ Council Portal Backend is a robust backend service designed to power council or 
 
 ## Features
 
-- User authentication and authorization (JWT-based)
-- Council member and committee management
-- Meeting scheduling and minutes recording
-- Document upload and sharing
-- Role-based access control
-- RESTful API endpoints
-- Admin dashboard support
-- Audit logs and activity tracking
+### 🔑 User Authentication & Management
+- Secure user registration and login system
+- Role-based access control (citizens, staff, administrators)
+- SMS/Email verification system
+- User profile management
+### 🚗 Vehicle Registration & Parking
+- Vehicle registration with approval workflow
+- Digital parking ticket system
+- Prepaid parking ticket bundles
+- Real-time ticket status tracking
+- Comprehensive parking analytics dashboard
+### 💰 Financial Management
+- Water billing and usage tracking
+- Property tax calculation and billing
+- Payment processing and tracking
+- Debt management system (30/60/90 day tracking)
+- Revenue analytics and reporting
+### 🏠 Property Management
+- Property registration and ownership records
+- Multiple property types (residential, commercial, industrial, etc.)
+- Community/neighborhood organization
+- Property value assessment
+### 💼 Business Services
+- Business registration and licensing
+- License approval workflow
+- Commercial property management
+### 🐾 Additional Citizen Services
+- Pet licensing and registration
+- Public announcement system with citizen comments
+- Issue reporting for municipal problems
+- Direct chat support system
+### 🏙️ City Administration
+- City and district/section management
+- Staff dashboards for service monitoring
+- Administrative approval workflows
+- Public service analytics
+### 🤖 AI Integration
+- Alida AI assistant for citizen support
+- Automated response system
+- Intelligent service recommendations
+### 🛠️ Technical Features
+- REST API architecture
+- Redis caching for performance optimization
+- Role-based security model
+- Analytics and reporting tools
+- JSON data serialization
 
 ## Demo
 
