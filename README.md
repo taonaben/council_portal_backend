@@ -118,9 +118,8 @@ Adjust as needed for your environment and deployment.
 - Django / Django REST Framework
 - PostgreSQL or SQLite (configurable)
 - JWT Authentication
-- Celery (for background tasks, if used)
-- Docker (optional, for containerization)
-- HTML, CSS, JavaScript (for admin or dashboard if applicable)
+- Celery (for background tasks)
+- Docker
 
 ## Contributing
 
